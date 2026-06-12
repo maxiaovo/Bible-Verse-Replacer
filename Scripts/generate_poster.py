@@ -14,15 +14,17 @@ RELEASE_URL = "https://github.com/maxiaovo/Bible-Verse-Replacer/releases/tag/v0.
 
 W, H = 1080, 1600
 
-BG = (248, 245, 236)
-INK = (34, 38, 45)
-MUTED = (94, 99, 107)
-TEAL = (24, 112, 103)
-GOLD = (209, 155, 56)
-CARD = (255, 252, 244)
-LINE = (225, 218, 202)
-GREEN = (43, 135, 94)
-BLUE = (50, 82, 150)
+BG = (7, 10, 18)
+INK = (238, 244, 248)
+MUTED = (147, 157, 172)
+CYAN = (50, 222, 210)
+MAGENTA = (245, 70, 150)
+GOLD = (255, 191, 74)
+CARD = (14, 19, 31)
+CARD_2 = (20, 27, 42)
+LINE = (58, 69, 90)
+GREEN = (48, 210, 136)
+BLUE = (83, 130, 255)
 
 
 def font(size: int, weight: str = "regular") -> ImageFont.FreeTypeFont:
@@ -41,13 +43,13 @@ def font(size: int, weight: str = "regular") -> ImageFont.FreeTypeFont:
     return ImageFont.load_default()
 
 
-F_TITLE = font(82)
-F_NAME = font(46)
-F_SUB = font(34)
-F_BODY = font(29)
-F_SMALL = font(23)
-F_TINY = font(19)
-F_MONO = font(28)
+F_TITLE = font(92)
+F_NAME = font(38)
+F_SUB = font(32)
+F_BODY = font(28)
+F_SMALL = font(22)
+F_TINY = font(18)
+F_MONO = font(30)
 
 
 def rounded_rectangle(draw: ImageDraw.ImageDraw, xy, radius, fill, outline=None, width=1):
@@ -93,12 +95,27 @@ def make_qr() -> Image.Image:
 
 
 def draw_badge(draw: ImageDraw.ImageDraw, text: str, x: int, y: int, fill, text_fill=(255, 255, 255)) -> int:
-    pad_x, pad_y = 18, 10
+    pad_x, pad_y = 18, 9
     tw = int(draw.textlength(text, font=F_SMALL))
     h = F_SMALL.size + pad_y * 2
-    rounded_rectangle(draw, (x, y, x + tw + pad_x * 2, y + h), 18, fill)
+    rounded_rectangle(draw, (x, y, x + tw + pad_x * 2, y + h), 10, fill)
     draw.text((x + pad_x, y + pad_y - 1), text, font=F_SMALL, fill=text_fill)
     return x + tw + pad_x * 2 + 12
+
+
+def draw_scanline_grid(draw: ImageDraw.ImageDraw) -> None:
+    for y in range(72, H, 44):
+        draw.line((0, y, W, y), fill=(12, 18, 30), width=1)
+    for x in range(42, W, 54):
+        draw.line((x, 0, x, H), fill=(11, 16, 27), width=1)
+    for i in range(-260, W, 92):
+        draw.line((i, 0, i + 420, 420), fill=(15, 25, 42), width=3)
+
+
+def draw_chip(draw: ImageDraw.ImageDraw, text: str, x: int, y: int, color) -> None:
+    rounded_rectangle(draw, (x, y, x + 286, y + 84), 16, CARD_2, (58, 69, 90), 1)
+    draw.rectangle((x, y, x + 7, y + 84), fill=color)
+    draw.text((x + 24, y + 25), text, font=F_SMALL, fill=INK)
 
 
 def main() -> None:
@@ -108,69 +125,65 @@ def main() -> None:
     img = Image.new("RGB", (W, H), BG)
     draw = ImageDraw.Draw(img)
 
-    # Soft geometric backdrop.
-    draw.ellipse((-260, -180, 430, 450), fill=(231, 238, 225))
-    draw.ellipse((720, -160, 1280, 410), fill=(237, 226, 199))
-    draw.rectangle((0, 0, W, 18), fill=TEAL)
-    draw.rectangle((0, 18, W, 26), fill=GOLD)
+    draw_scanline_grid(draw)
+    draw.rectangle((0, 0, W, 18), fill=CYAN)
+    draw.rectangle((0, 18, W, 28), fill=MAGENTA)
+    draw.rectangle((72, 76, 1008, 80), fill=(36, 49, 70))
 
     # Header.
-    draw.text((72, 92), "经文替换器", font=F_TITLE, fill=INK)
-    draw.text((76, 198), "Bible Verse Replacer", font=F_NAME, fill=TEAL)
-    draw_text_block(
-        draw,
-        "选中经文引用，按下快捷键，自动替换为完整经文。",
-        (76, 280),
-        F_SUB,
-        INK,
-        900,
-        12,
-    )
+    draw.text((76, 104), "正文替换器", font=F_TITLE, fill=INK)
+    draw.text((80, 104), "正文替换器", font=F_TITLE, fill=(255, 255, 255))
+    draw.text((80, 212), "TEXT SUMMONER / v0.1.0", font=F_NAME, fill=CYAN)
+    draw_text_block(draw, "选中坐标，按键召唤正文。复制粘贴退散。", (80, 274), F_SUB, INK, 900, 10)
+    draw.text((82, 336), "macOS + Windows · 离线 · 常驻后台 · 低调启动", font=F_SMALL, fill=MUTED)
 
     # Example card.
-    card_x, card_y, card_w, card_h = 76, 420, 928, 420
-    rounded_rectangle(draw, (card_x, card_y, card_x + card_w, card_y + card_h), 28, CARD, LINE, 2)
-    draw.text((card_x + 42, card_y + 38), "输入", font=F_SMALL, fill=MUTED)
-    rounded_rectangle(draw, (card_x + 42, card_y + 80, card_x + card_w - 42, card_y + 150), 18, (244, 241, 232), None)
-    draw.text((card_x + 70, card_y + 100), "创世记 1:1", font=F_MONO, fill=INK)
+    card_x, card_y, card_w, card_h = 72, 414, 936, 322
+    rounded_rectangle(draw, (card_x, card_y, card_x + card_w, card_y + card_h), 22, CARD, (71, 86, 115), 2)
+    draw.rectangle((card_x, card_y, card_x + card_w, card_y + 62), fill=(18, 25, 41))
+    draw.ellipse((card_x + 28, card_y + 21, card_x + 42, card_y + 35), fill=MAGENTA)
+    draw.ellipse((card_x + 52, card_y + 21, card_x + 66, card_y + 35), fill=GOLD)
+    draw.ellipse((card_x + 76, card_y + 21, card_x + 90, card_y + 35), fill=GREEN)
+    draw.text((card_x + 116, card_y + 17), "HOTKEY SEQUENCE", font=F_SMALL, fill=MUTED)
 
-    draw.line((card_x + 42, card_y + 190, card_x + card_w - 42, card_y + 190), fill=LINE, width=2)
-    draw.text((card_x + 42, card_y + 225), "替换后", font=F_SMALL, fill=MUTED)
+    draw.text((card_x + 40, card_y + 92), "> INPUT", font=F_SMALL, fill=CYAN)
+    draw.text((card_x + 40, card_y + 135), "创 1:1", font=F_MONO, fill=INK)
+    draw.text((card_x + 40, card_y + 196), "> OUTPUT", font=F_SMALL, fill=MAGENTA)
     output = "创世记 1:1 起初，神创造天地。"
-    draw_text_block(draw, output, (card_x + 42, card_y + 270), F_BODY, INK, card_w - 84, 12)
+    draw_text_block(draw, output, (card_x + 40, card_y + 238), F_BODY, INK, card_w - 80, 8)
 
     # Feature badges and bullets.
-    y = 900
-    x = 76
-    x = draw_badge(draw, "macOS 13+", x, y, TEAL)
-    x = draw_badge(draw, "Windows 7 SP1+", x, y, BLUE)
-    draw_badge(draw, "离线经文库", x, y, GREEN)
+    y = 786
+    x = 72
+    x = draw_badge(draw, "macOS 13+", x, y, (18, 118, 110))
+    x = draw_badge(draw, "Windows 7 SP1+", x, y, (46, 76, 154))
+    x = draw_badge(draw, "快捷键可改", x, y, (118, 64, 142))
+    draw_badge(draw, "不联网", x, y, (30, 125, 80))
 
-    bullets = [
-        "支持中文 / 英文书卷名与常用缩写",
-        "兼容全角、半角符号",
-        "可自定义快捷键与输出格式",
-        "内置新标点和合本简体 cmn-cu89s",
-    ]
-    y = 982
-    for bullet in bullets:
-        draw.ellipse((82, y + 9, 96, y + 23), fill=GOLD)
-        draw.text((112, y), bullet, font=F_BODY, fill=INK)
-        y += 54
+    draw_chip(draw, "中英书卷名", 72, 874, CYAN)
+    draw_chip(draw, "全角半角通吃", 397, 874, MAGENTA)
+    draw_chip(draw, "输出格式可选", 722, 874, GOLD)
+    draw_chip(draw, "后台潜行", 72, 982, GREEN)
+    draw_chip(draw, "一键替换", 397, 982, BLUE)
+    draw_chip(draw, "离线正文库", 722, 982, (147, 96, 255))
+
+    rounded_rectangle(draw, (72, 1114, 1008, 1182), 14, (18, 25, 41), (58, 69, 90), 1)
+    draw.text((104, 1134), "提示：微信里发它，就说是“正文工具”。别解释，解释就输了。", font=F_SMALL, fill=(211, 218, 230))
 
     # QR panel.
-    panel_x, panel_y, panel_w, panel_h = 76, 1230, 928, 270
-    rounded_rectangle(draw, (panel_x, panel_y, panel_x + panel_w, panel_y + panel_h), 28, (31, 39, 47), None)
+    panel_x, panel_y, panel_w, panel_h = 72, 1230, 936, 268
+    rounded_rectangle(draw, (panel_x, panel_y, panel_x + panel_w, panel_y + panel_h), 22, (235, 241, 242), None)
+    draw.rectangle((panel_x, panel_y, panel_x + 16, panel_y + panel_h), fill=MAGENTA)
 
     qr_size = 210
     qr = qr_img.resize((qr_size, qr_size), Image.Resampling.NEAREST)
-    qr_bg_x, qr_bg_y = panel_x + panel_w - qr_size - 44, panel_y + 30
-    rounded_rectangle(draw, (qr_bg_x - 12, qr_bg_y - 12, qr_bg_x + qr_size + 12, qr_bg_y + qr_size + 12), 20, (255, 255, 255), None)
+    qr_bg_x, qr_bg_y = panel_x + panel_w - qr_size - 42, panel_y + 29
+    rounded_rectangle(draw, (qr_bg_x - 12, qr_bg_y - 12, qr_bg_x + qr_size + 12, qr_bg_y + qr_size + 12), 18, (255, 255, 255), (28, 36, 48), 2)
     img.paste(qr, (qr_bg_x, qr_bg_y))
 
-    draw.text((panel_x + 44, panel_y + 46), "扫码下载 v0.1.0", font=F_NAME, fill=(255, 255, 255))
-    draw.text((panel_x + 46, panel_y + 120), "常驻后台 · 一键替换 · 离线可用", font=F_BODY, fill=(226, 232, 230))
-    draw_text_block(draw, RELEASE_URL, (panel_x + 46, panel_y + 174), F_TINY, (200, 207, 205), 560, 7)
+    draw.text((panel_x + 48, panel_y + 42), "扫码解锁", font=F_NAME, fill=(17, 24, 37))
+    draw.text((panel_x + 50, panel_y + 104), "v0.1.0 · 双系统 · 绿色下载", font=F_BODY, fill=(47, 58, 74))
+    draw_text_block(draw, RELEASE_URL, (panel_x + 50, panel_y + 164), F_TINY, (75, 84, 97), 548, 7)
 
     img.save(OUT, quality=96)
     print(OUT)
