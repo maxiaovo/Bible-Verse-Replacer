@@ -12,7 +12,6 @@
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
     <TargetFrameworkProfile />
     <AppDesignerFolder>Properties</AppDesignerFolder>
   </PropertyGroup>
@@ -64,7 +63,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="app.manifest" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\..\Resources\Bible\cmn-cu89s.json">
