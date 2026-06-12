@@ -25,11 +25,14 @@ Bible Verse Replacer 是一个常驻 macOS 菜单栏的小工具。它适合写�
 
 当前版本是早期预览版：
 
-- 支持 macOS 13 Ventura 及以上。
-- App 使用本地临时签名，尚未做 Apple notarization 公证。
+- macOS：下载 `BibleVerseReplacer-v0.1.0.zip`，支持 macOS 13 Ventura 及以上。
+- Windows：下载 `BibleVerseReplacer-Windows-v0.1.0.zip`，支持 Windows 7 SP1 及以上，需要 .NET Framework 4.8。
+- 当前成品尚未做 Apple notarization 公证或 Windows 代码签名。
 - 如果 macOS 提示无法打开，请在 Finder 中右键 App，选择“打开”，再确认打开。
 
 ## 第一次使用
+
+### macOS
 
 1. 下载并解压 `BibleVerseReplacer-v0.1.0.zip`。
 2. 打开 `BibleVerseReplacer.app`，菜单栏会出现一个「经」字图标。
@@ -38,6 +41,16 @@ Bible Verse Replacer 是一个常驻 macOS 菜单栏的小工具。它适合写�
 5. 按默认快捷键 `⌃⌥⌘B`。
 
 如果权限没有打开，可以点击菜单栏「经」图标，进入设置或打开辅助功能设置。
+
+### Windows
+
+1. 确认系统是 Windows 7 SP1 或更新版本，并已安装 [.NET Framework 4.8](https://support.microsoft.com/topic/microsoft-net-framework-4-8-offline-installer-for-windows-9d23f658-3b97-68ab-d013-aa3c3e7495e0)。
+2. 下载并解压 `BibleVerseReplacer-Windows-v0.1.0.zip`。
+3. 运行 `BibleVerseReplacer.exe`，系统托盘会出现应用图标。
+4. 在任意 App 中选中经文引用，比如 `创世记 1:1`。
+5. 按默认快捷键 `Ctrl + Alt + Win + B`。
+
+Windows 版可以在托盘菜单里打开设置窗口，修改快捷键、输出格式和开机自启动。
 
 ## 支持的引用
 
@@ -101,6 +114,8 @@ Bible Verse Replacer 运行时不需要联网。经文库已经离线内置在 A
 
 ## 从源码构建
 
+### macOS
+
 需要 macOS 13+、Xcode Command Line Tools 或 Xcode。
 
 ```sh
@@ -132,6 +147,20 @@ make update-data
 ```
 
 普通构建会复用 `.build/downloads/` 里的下载缓存。
+
+### Windows
+
+需要 Visual Studio Build Tools 或 Visual Studio，并安装 .NET Framework 4.8 Developer Pack。
+
+```powershell
+msbuild BibleVerseReplacer.sln /restore /p:Configuration=Release /p:Platform="Any CPU"
+```
+
+运行自测：
+
+```powershell
+.\Windows\BibleVerseReplacer.Windows\bin\Release\BibleVerseReplacer.exe --self-test
+```
 
 ## 路线图
 
