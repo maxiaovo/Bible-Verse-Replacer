@@ -91,9 +91,13 @@ final class ArticleReferenceReplacer {
     }
 
     private func isReferenceStart(in text: String, at index: String.Index) -> Bool {
+        if text[index].isWhitespace {
+            return false
+        }
+
         if index > text.startIndex {
             let previous = text[text.index(before: index)]
-            if previous.isLetter || previous.isNumber {
+            if previous.isNumber || previous.isASCIILetter {
                 return false
             }
         }
@@ -200,5 +204,13 @@ final class ArticleReferenceReplacer {
             .filter { !$0.isWhitespace }
             .map(String.init)
             .joined()
+    }
+}
+
+private extension Character {
+    var isASCIILetter: Bool {
+        unicodeScalars.count == 1 && unicodeScalars.allSatisfy { scalar in
+            (65...90).contains(scalar.value) || (97...122).contains(scalar.value)
+        }
     }
 }

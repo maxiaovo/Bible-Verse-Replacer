@@ -269,6 +269,18 @@ enum SelfTest {
                 throw TestFailure("Expected article output to contain \(fragment), got \(articleResult.text)")
             }
 
+            let inlineChineseArticle = "今天我读了创世记1:1"
+            let inlineChineseResult = articleReplacer.replaceReferences(
+                in: inlineChineseArticle,
+                format: .continuousText,
+                labelMode: .normalizedFull,
+                combinedPassageMode: .compactEllipsis,
+                quotationStyle: .fullWidth
+            )
+            if inlineChineseResult.text != "今天我读了创世记 1:1 起初，神创造天地。" {
+                throw TestFailure("Expected inline Chinese article replacement, got \(inlineChineseResult.text)")
+            }
+
             try assertUpdateDownloadStaging()
             try assertUpdateDownloadStagingCreatesDestinationDirectory()
             try assertUpdateDownloadStagingReportsMissingSource()

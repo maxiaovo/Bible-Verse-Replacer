@@ -114,7 +114,12 @@ namespace BibleVerseReplacer.Windows
 
         private static bool IsReferenceStart(string text, int index)
         {
-            if (index > 0 && (char.IsLetterOrDigit(text[index - 1])))
+            if (char.IsWhiteSpace(text[index]))
+            {
+                return false;
+            }
+
+            if (index > 0 && (char.IsDigit(text[index - 1]) || IsAsciiLetter(text[index - 1])))
             {
                 return false;
             }
@@ -132,6 +137,11 @@ namespace BibleVerseReplacer.Windows
                 lookahead++;
             }
             return lookahead < text.Length && (char.IsDigit(text[lookahead]) || text[lookahead] == '第');
+        }
+
+        private static bool IsAsciiLetter(char ch)
+        {
+            return (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z');
         }
 
         private static int RawPrefixLength(BibleBook book, string text)

@@ -81,6 +81,18 @@ namespace BibleVerseReplacer.Windows
                 AssertTextContains(articleResult.Text, "还有 马可福音 5:8 是因耶稣曾吩咐他说");
                 AssertTextContains(articleResult.Text, "已经替换：创世记 1:1 起初，神创造天地。");
 
+                string inlineChineseArticle = "今天我读了创世记1:1";
+                ArticleReplacementResult inlineChineseResult = articleReplacer.ReplaceReferences(
+                    inlineChineseArticle,
+                    OutputFormat.ContinuousText,
+                    ReferenceLabelMode.NormalizedFull,
+                    CombinedPassageMode.CompactEllipsis,
+                    QuotationStyle.FullWidth);
+                if (inlineChineseResult.Text != "今天我读了创世记 1:1 起初，神创造天地。")
+                {
+                    throw new InvalidOperationException("Expected inline Chinese article replacement, got " + inlineChineseResult.Text);
+                }
+
                 Console.WriteLine("Self-test passed");
                 return 0;
             }

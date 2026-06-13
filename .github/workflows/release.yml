@@ -89,11 +89,56 @@ jobs:
             dist/BibleVerseReplacer-v${{ needs.version.outputs.version }}.zip
             dist/BibleVerseReplacer-v${{ needs.version.outputs.version }}-SHA256.txt
 
+  windows:
+    name: Build Windows artifact
+    needs: version
+    if: needs.version.outputs.release_exists != 'true'
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Build
+        run: msbuild BibleVerseReplacer.sln /restore /p:Configuration=Release /p:Platform="Any CPU"
+
+      - name: Self test
+        shell: pwsh
+        run: |
+          & .\Windows\BibleVerseReplacer.Windows\bin\Release\BibleVerseReplacer.exe --self-test
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Package
+        shell: pwsh
+        run: |
+          $version = "${{ needs.version.outputs.version }}"
+          $publish = "dist\windows\BibleVerseReplacer"
+          New-Item -ItemType Directory -Force -Path $publish | Out-Null
+          Copy-Item Windows\BibleVerseReplacer.Windows\bin\Release\BibleVerseReplacer.exe $publish\
+          Copy-Item Windows\BibleVerseReplacer.Windows\bin\Release\BibleVerseReplacer.exe.config $publish\
+          Copy-Item -Recurse Windows\BibleVerseReplacer.Windows\bin\Release\Resources $publish\
+          Compress-Archive -Path $publish -DestinationPath "dist\BibleVerseReplacer-Windows-v$version.zip" -Force
+          Get-FileHash "dist\BibleVerseReplacer-Windows-v$version.zip" -Algorithm SHA256 |
+            ForEach-Object { "$($_.Hash.ToLowerInvariant())  BibleVerseReplacer-Windows-v$version.zip" } |
+            Set-Content -Encoding ASCII "dist\BibleVerseReplacer-Windows-v$version-SHA256.txt"
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: BibleVerseReplacer-Windows-v${{ needs.version.outputs.version }}
+          path: |
+            dist/BibleVerseReplacer-Windows-v${{ needs.version.outputs.version }}.zip
+            dist/BibleVerseReplacer-Windows-v${{ needs.version.outputs.version }}-SHA256.txt
+
   publish:
     name: Publish GitHub release
     needs:
       - version
       - macos
+      - windows
     if: needs.version.outputs.release_exists != 'true'
     runs-on: ubuntu-latest
 
@@ -115,6 +160,8 @@ jobs:
           gh release create "$tag" \
             "dist/BibleVerseReplacer-v$version.zip" \
             "dist/BibleVerseReplacer-v$version-SHA256.txt" \
+            "dist/BibleVerseReplacer-Windows-v$version.zip" \
+            "dist/BibleVerseReplacer-Windows-v$version-SHA256.txt" \
             --repo "$GITHUB_REPOSITORY" \
             --target "${{ github.sha }}" \
             --title "Bible Verse Replacer $tag" \
@@ -122,10 +169,12 @@ jobs:
 
           本 release 由 GitHub Actions 自动创建，对应 main 分支 commit ${{ github.sha }}。
 
+          - 修复中文正文紧贴经文引用时无法检测的问题，例如：今天我读了创世记1:1。
+          - 本次 release 同时包含 macOS 与 Windows 安装包。
+
           ## 下载
 
           - macOS: BibleVerseReplacer-v$version.zip
-
-          Windows builds are manual-by-request and are not included in the default release workflow.
+          - Windows: BibleVerseReplacer-Windows-v$version.zip
 
           当前仍未做 Apple notarization 公证。"
