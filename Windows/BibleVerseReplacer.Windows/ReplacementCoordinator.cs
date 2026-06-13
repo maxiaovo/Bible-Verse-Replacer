@@ -21,10 +21,11 @@ namespace BibleVerseReplacer.Windows
         public void ReplaceSelection()
         {
             IDataObject snapshot = clipboard.Snapshot();
+            string selectedText = null;
 
             try
             {
-                string selectedText = clipboard.CopySelectedText();
+                selectedText = clipboard.CopySelectedText();
                 if (string.IsNullOrWhiteSpace(selectedText))
                 {
                     clipboard.Restore(snapshot);
@@ -58,7 +59,7 @@ namespace BibleVerseReplacer.Windows
             catch (Exception ex)
             {
                 ArticleReplacementResult articleResult = articleReplacer.ReplaceReferences(
-                    selectedText,
+                    selectedText ?? string.Empty,
                     UserPreferences.Instance.OutputFormat,
                     UserPreferences.Instance.ReferenceLabelMode,
                     UserPreferences.Instance.CombinedPassageMode,
