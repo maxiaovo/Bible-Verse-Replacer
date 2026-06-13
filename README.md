@@ -23,12 +23,12 @@ Bible Verse Replacer 是一个常驻 macOS 菜单栏的小工具。它适合写�
 
 ## 下载
 
-请到 [Releases](https://github.com/maxiaovo/Bible-Verse-Replacer/releases) 下载最新版本的 `BibleVerseReplacer-v0.1.3.zip`。
+请到 [Releases](https://github.com/maxiaovo/Bible-Verse-Replacer/releases) 下载最新版本的 `BibleVerseReplacer-v0.1.4.zip`。
 
 当前版本是早期预览版：
 
-- macOS：下载 `BibleVerseReplacer-v0.1.3.zip`，支持 macOS 13 Ventura 及以上。
-- Windows：下载 `BibleVerseReplacer-Windows-v0.1.3.zip`，支持 Windows 7 SP1 及以上，需要 .NET Framework 4.8。
+- macOS：下载 `BibleVerseReplacer-v0.1.4.zip`，支持 macOS 13 Ventura 及以上。
+- Windows：下载 `BibleVerseReplacer-Windows-v0.1.4.zip`，支持 Windows 7 SP1 及以上，需要 .NET Framework 4.8。
 - 当前成品尚未做 Apple notarization 公证或 Windows 代码签名。
 - 如果 macOS 提示无法打开，请在 Finder 中右键 App，选择“打开”，再确认打开。
 
@@ -36,7 +36,7 @@ Bible Verse Replacer 是一个常驻 macOS 菜单栏的小工具。它适合写�
 
 ### macOS
 
-1. 下载并解压 `BibleVerseReplacer-v0.1.3.zip`。
+1. 下载并解压 `BibleVerseReplacer-v0.1.4.zip`。
 2. 打开 `BibleVerseReplacer.app`，菜单栏会出现一个「经」字图标。
 3. 按提示授予“辅助功能”权限。这个权限用于模拟复制和粘贴。
 4. 在任意 App 中选中经文引用，比如 `创世记 1:1`。
@@ -47,7 +47,7 @@ Bible Verse Replacer 是一个常驻 macOS 菜单栏的小工具。它适合写�
 ### Windows
 
 1. 确认系统是 Windows 7 SP1 或更新版本，并已安装 [.NET Framework 4.8](https://support.microsoft.com/topic/microsoft-net-framework-4-8-offline-installer-for-windows-9d23f658-3b97-68ab-d013-aa3c3e7495e0)。
-2. 下载并解压 `BibleVerseReplacer-Windows-v0.1.3.zip`。
+2. 下载并解压 `BibleVerseReplacer-Windows-v0.1.4.zip`。
 3. 运行 `BibleVerseReplacer.exe`，系统托盘会出现应用图标。
 4. 在任意 App 中选中经文引用，比如 `创世记 1:1`。
 5. 按默认快捷键 `Ctrl + Alt + Win + B`。
@@ -183,6 +183,18 @@ msbuild BibleVerseReplacer.sln /restore /p:Configuration=Release /p:Platform="An
 ```powershell
 .\Windows\BibleVerseReplacer.Windows\bin\Release\BibleVerseReplacer.exe --self-test
 ```
+
+## 发布规则
+
+仓库已经开启自动发布：
+
+- 所有产品相关改动必须推送到 GitHub 的 `main` 分支。
+- 修改功能、图标、资源、源码或 Windows 工程时，必须同步更新 README。
+- 产品相关改动必须提升版本号：
+  - `Info.plist` 的 `CFBundleShortVersionString` 和 `CFBundleVersion`
+  - `Windows/BibleVerseReplacer.Windows/Properties/AssemblyInfo.cs`
+- `Release Policy` 工作流会检查 README 和版本号是否同步。
+- `Release` 工作流会在发现新版本号时自动构建 macOS/Windows 成品，并创建对应的 GitHub Release。
 
 ## 路线图
 

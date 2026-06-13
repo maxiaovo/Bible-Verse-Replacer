@@ -24,6 +24,15 @@ jobs:
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
 
+      - name: Read version
+        id: version
+        shell: pwsh
+        run: |
+          $content = Get-Content Info.plist -Raw
+          $match = [regex]::Match($content, '<key>CFBundleShortVersionString</key>\s*<string>([^<]+)</string>')
+          if (-not $match.Success) { throw "Could not read CFBundleShortVersionString from Info.plist" }
+          "version=$($match.Groups[1].Value)" >> $env:GITHUB_OUTPUT
+
       - name: Build
         run: msbuild BibleVerseReplacer.sln /restore /p:Configuration=Release /p:Platform="Any CPU"
 
@@ -36,7 +45,7 @@ jobs:
       - name: Package
         shell: pwsh
         run: |
-          $version = "0.1.3"
+          $version = "${{ steps.version.outputs.version }}"
           $publish = "dist\windows\BibleVerseReplacer"
           New-Item -ItemType Directory -Force -Path $publish | Out-Null
           Copy-Item Windows\BibleVerseReplacer.Windows\bin\Release\BibleVerseReplacer.exe $publish\
@@ -50,7 +59,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: BibleVerseReplacer-Windows-v0.1.3
+          name: BibleVerseReplacer-Windows-v${{ steps.version.outputs.version }}
           path: |
-            dist/BibleVerseReplacer-Windows-v0.1.3.zip
-            dist/BibleVerseReplacer-Windows-v0.1.3-SHA256.txt
+            dist/BibleVerseReplacer-Windows-v${{ steps.version.outputs.version }}.zip
+            dist/BibleVerseReplacer-Windows-v${{ steps.version.outputs.version }}-SHA256.txt

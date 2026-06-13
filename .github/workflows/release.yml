@@ -1,0 +1,183 @@
+name: Release
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  version:
+    name: Validate release version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.version.outputs.tag }}
+      release_exists: ${{ steps.release.outputs.exists }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Read and validate version
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$(perl -0ne 'print $1 if /CFBundleShortVersionString<\/key>\s*<string>([^<]+)<\/string>/' Info.plist)"
+          build="$(perl -0ne 'print $1 if /CFBundleVersion<\/key>\s*<string>([^<]+)<\/string>/' Info.plist)"
+          win_version="$(perl -ne 'print $1 if /AssemblyVersion\("([0-9]+\.[0-9]+\.[0-9]+)\.0"\)/' Windows/BibleVerseReplacer.Windows/Properties/AssemblyInfo.cs)"
+
+          if [[ -z "$version" ]]; then
+            echo "Could not read CFBundleShortVersionString from Info.plist" >&2
+            exit 1
+          fi
+
+          if [[ "$version" != "$win_version" ]]; then
+            echo "macOS version ($version) must match Windows version ($win_version)" >&2
+            exit 1
+          fi
+
+          if ! grep -q "v$version" README.md; then
+            echo "README.md must mention v$version before release" >&2
+            exit 1
+          fi
+
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=v$version" >> "$GITHUB_OUTPUT"
+          echo "build=$build" >> "$GITHUB_OUTPUT"
+
+      - name: Check existing release
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag="${{ steps.version.outputs.tag }}"
+          if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release $tag already exists; skipping publish jobs."
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  macos:
+    name: Build macOS artifact
+    needs: version
+    if: needs.version.outputs.release_exists != 'true'
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build and self-test
+        run: make test
+
+      - name: Package
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="${{ needs.version.outputs.version }}"
+          mkdir -p dist
+          ditto -c -k --keepParent .build/BibleVerseReplacer.app "dist/BibleVerseReplacer-v$version.zip"
+          (cd dist && shasum -a 256 "BibleVerseReplacer-v$version.zip" > "BibleVerseReplacer-v$version-SHA256.txt")
+
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: BibleVerseReplacer-macOS-v${{ needs.version.outputs.version }}
+          path: |
+            dist/BibleVerseReplacer-v${{ needs.version.outputs.version }}.zip
+            dist/BibleVerseReplacer-v${{ needs.version.outputs.version }}-SHA256.txt
+
+  windows:
+    name: Build Windows artifact
+    needs: version
+    if: needs.version.outputs.release_exists != 'true'
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Build
+        run: msbuild BibleVerseReplacer.sln /restore /p:Configuration=Release /p:Platform="Any CPU"
+
+      - name: Self test
+        shell: pwsh
+        run: |
+          & .\Windows\BibleVerseReplacer.Windows\bin\Release\BibleVerseReplacer.exe --self-test
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Package
+        shell: pwsh
+        run: |
+          $version = "${{ needs.version.outputs.version }}"
+          $publish = "dist\windows\BibleVerseReplacer"
+          New-Item -ItemType Directory -Force -Path $publish | Out-Null
+          Copy-Item Windows\BibleVerseReplacer.Windows\bin\Release\BibleVerseReplacer.exe $publish\
+          Copy-Item Windows\BibleVerseReplacer.Windows\bin\Release\BibleVerseReplacer.exe.config $publish\
+          Copy-Item -Recurse Windows\BibleVerseReplacer.Windows\bin\Release\Resources $publish\
+          Compress-Archive -Path $publish -DestinationPath "dist\BibleVerseReplacer-Windows-v$version.zip" -Force
+          Get-FileHash "dist\BibleVerseReplacer-Windows-v$version.zip" -Algorithm SHA256 |
+            ForEach-Object { "$($_.Hash.ToLowerInvariant())  BibleVerseReplacer-Windows-v$version.zip" } |
+            Set-Content -Encoding ASCII "dist\BibleVerseReplacer-Windows-v$version-SHA256.txt"
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: BibleVerseReplacer-Windows-v${{ needs.version.outputs.version }}
+          path: |
+            dist/BibleVerseReplacer-Windows-v${{ needs.version.outputs.version }}.zip
+            dist/BibleVerseReplacer-Windows-v${{ needs.version.outputs.version }}-SHA256.txt
+
+  publish:
+    name: Publish GitHub release
+    needs:
+      - version
+      - macos
+      - windows
+    if: needs.version.outputs.release_exists != 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="${{ needs.version.outputs.version }}"
+          tag="${{ needs.version.outputs.tag }}"
+          gh release create "$tag" \
+            "dist/BibleVerseReplacer-v$version.zip" \
+            "dist/BibleVerseReplacer-v$version-SHA256.txt" \
+            "dist/BibleVerseReplacer-Windows-v$version.zip" \
+            "dist/BibleVerseReplacer-Windows-v$version-SHA256.txt" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "${{ github.sha }}" \
+            --title "Bible Verse Replacer $tag" \
+            --notes "## 更新内容
+
+          本 release 由 GitHub Actions 自动创建，对应 main 分支 commit ${{ github.sha }}。
+
+          ## 下载
+
+          - macOS: BibleVerseReplacer-v$version.zip
+          - Windows: BibleVerseReplacer-Windows-v$version.zip
+
+          当前仍未做 Apple notarization 公证或 Windows 代码签名。"

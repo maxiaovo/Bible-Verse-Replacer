@@ -1,0 +1,84 @@
+name: Release Policy
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  policy:
+    name: Require README and version for product changes
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check release policy
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            base="${{ github.event.pull_request.base.sha }}"
+          else
+            base="${{ github.event.before }}"
+            if [[ -z "$base" || "$base" == "0000000000000000000000000000000000000000" ]]; then
+              base="$(git rev-parse HEAD^)"
+            fi
+          fi
+
+          changed="$(git diff --name-only "$base" HEAD)"
+          echo "$changed"
+
+          product_changes="$(echo "$changed" | grep -E '^(Sources/|Windows/|Resources/|Assets/|Scripts/|Info\.plist|Makefile|BibleVerseReplacer\.sln)' || true)"
+          if [[ -z "$product_changes" ]]; then
+            echo "No product-facing changes detected."
+            exit 0
+          fi
+
+          missing=0
+          require_changed_file() {
+            local file="$1"
+            if ! echo "$changed" | grep -qx "$file"; then
+              echo "::error file=$file::Product-facing changes must update $file."
+              missing=1
+            fi
+          }
+
+          require_changed_file "README.md"
+          require_changed_file "Info.plist"
+          require_changed_file "Windows/BibleVerseReplacer.Windows/Properties/AssemblyInfo.cs"
+
+          version="$(perl -0ne 'print $1 if /CFBundleShortVersionString<\/key>\s*<string>([^<]+)<\/string>/' Info.plist)"
+          build="$(perl -0ne 'print $1 if /CFBundleVersion<\/key>\s*<string>([^<]+)<\/string>/' Info.plist)"
+          win_version="$(perl -ne 'print $1 if /AssemblyVersion\("([0-9]+\.[0-9]+\.[0-9]+)\.0"\)/' Windows/BibleVerseReplacer.Windows/Properties/AssemblyInfo.cs)"
+          win_file_version="$(perl -ne 'print $1 if /AssemblyFileVersion\("([0-9]+\.[0-9]+\.[0-9]+)\.0"\)/' Windows/BibleVerseReplacer.Windows/Properties/AssemblyInfo.cs)"
+
+          if [[ -z "$version" || -z "$build" ]]; then
+            echo "::error file=Info.plist::Info.plist must contain CFBundleShortVersionString and CFBundleVersion."
+            missing=1
+          fi
+
+          if [[ "$version" != "$win_version" || "$version" != "$win_file_version" ]]; then
+            echo "::error file=Windows/BibleVerseReplacer.Windows/Properties/AssemblyInfo.cs::Windows version must match Info.plist version $version."
+            missing=1
+          fi
+
+          if ! grep -q "v$version" README.md; then
+            echo "::error file=README.md::README.md must mention v$version."
+            missing=1
+          fi
+
+          if git tag -l "v$version" | grep -q .; then
+            echo "::error file=Info.plist::Version v$version already has a tag. Bump to a new version for product-facing changes."
+            missing=1
+          fi
+
+          exit "$missing"
