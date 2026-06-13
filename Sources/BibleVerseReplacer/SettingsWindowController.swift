@@ -26,7 +26,7 @@ final class SettingsWindowController: NSWindowController {
         self.shortcutButton = ShortcutRecorderButton(shortcut: preferences.shortcut)
 
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 540, height: 445),
+            contentRect: NSRect(x: 0, y: 0, width: 540, height: 465),
             styleMask: [.titled, .closable, .miniaturizable],
             backing: .buffered,
             defer: false
@@ -81,6 +81,10 @@ final class SettingsWindowController: NSWindowController {
         subtitleLabel.textColor = .secondaryLabelColor
         subtitleLabel.font = .systemFont(ofSize: 13)
 
+        let authorLabel = NSTextField(labelWithString: "作者：大侠请留步")
+        authorLabel.textColor = .secondaryLabelColor
+        authorLabel.font = .systemFont(ofSize: 13)
+
         outputPopup.addItems(withTitles: OutputFormat.allCases.map(\.title))
         outputPopup.target = self
         outputPopup.action = #selector(outputFormatChanged)
@@ -108,6 +112,7 @@ final class SettingsWindowController: NSWindowController {
 
         root.addArrangedSubview(titleLabel)
         root.addArrangedSubview(subtitleLabel)
+        root.addArrangedSubview(authorLabel)
         root.addArrangedSubview(separator())
         root.addArrangedSubview(row(label: "快捷键", view: shortcutButton))
         root.addArrangedSubview(row(label: "输出格式", view: outputPopup))

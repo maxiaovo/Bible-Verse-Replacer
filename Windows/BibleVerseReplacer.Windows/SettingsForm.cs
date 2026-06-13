@@ -19,9 +19,10 @@ namespace BibleVerseReplacer.Windows
         {
             this.onPreferencesChanged = onPreferencesChanged;
             Text = "Bible Verse Replacer 设置";
+            Icon = AppIcons.Current;
             StartPosition = FormStartPosition.CenterScreen;
-            Size = new Size(520, 415);
-            MinimumSize = new Size(520, 415);
+            Size = new Size(520, 435);
+            MinimumSize = new Size(520, 435);
             MaximizeBox = false;
             KeyPreview = true;
 
@@ -74,9 +75,16 @@ namespace BibleVerseReplacer.Windows
             subtitle.Location = new Point(26, 56);
             Controls.Add(subtitle);
 
-            AddLabel("快捷键", 30, 96);
+            Label author = new Label();
+            author.Text = "作者：大侠请留步";
+            author.AutoSize = true;
+            author.ForeColor = SystemColors.GrayText;
+            author.Location = new Point(26, 76);
+            Controls.Add(author);
+
+            AddLabel("快捷键", 30, 116);
             shortcutTextBox.ReadOnly = true;
-            shortcutTextBox.Location = new Point(120, 92);
+            shortcutTextBox.Location = new Point(120, 112);
             shortcutTextBox.Width = 220;
             shortcutTextBox.TabStop = false;
             shortcutTextBox.Click += delegate
@@ -89,7 +97,7 @@ namespace BibleVerseReplacer.Windows
 
             Button recordButton = new Button();
             recordButton.Text = "录制";
-            recordButton.Location = new Point(352, 90);
+            recordButton.Location = new Point(352, 110);
             recordButton.Width = 80;
             recordButton.Click += delegate
             {
@@ -99,9 +107,9 @@ namespace BibleVerseReplacer.Windows
             };
             Controls.Add(recordButton);
 
-            AddLabel("输出格式", 30, 138);
+            AddLabel("输出格式", 30, 158);
             outputFormatComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
-            outputFormatComboBox.Location = new Point(120, 134);
+            outputFormatComboBox.Location = new Point(120, 154);
             outputFormatComboBox.Width = 260;
             outputFormatComboBox.Items.Add("书卷 章:节 经文");
             outputFormatComboBox.Items.Add("连续正文");
@@ -116,9 +124,9 @@ namespace BibleVerseReplacer.Windows
             };
             Controls.Add(outputFormatComboBox);
 
-            AddLabel("引用标签", 30, 176);
+            AddLabel("引用标签", 30, 196);
             referenceLabelComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
-            referenceLabelComboBox.Location = new Point(120, 172);
+            referenceLabelComboBox.Location = new Point(120, 192);
             referenceLabelComboBox.Width = 260;
             referenceLabelComboBox.Items.Add("改写为完整标签");
             referenceLabelComboBox.Items.Add("保留输入标签");
@@ -132,9 +140,9 @@ namespace BibleVerseReplacer.Windows
             };
             Controls.Add(referenceLabelComboBox);
 
-            AddLabel("组合显示", 30, 214);
+            AddLabel("组合显示", 30, 234);
             combinedPassageComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
-            combinedPassageComboBox.Location = new Point(120, 210);
+            combinedPassageComboBox.Location = new Point(120, 230);
             combinedPassageComboBox.Width = 260;
             combinedPassageComboBox.Items.Add("合并为一段（省略号连接）");
             combinedPassageComboBox.Items.Add("按片段分行");
@@ -149,21 +157,21 @@ namespace BibleVerseReplacer.Windows
 
             startupCheckBox.Text = "开机自启动";
             startupCheckBox.AutoSize = true;
-            startupCheckBox.Location = new Point(120, 252);
+            startupCheckBox.Location = new Point(120, 272);
             startupCheckBox.CheckedChanged += delegate
             {
                 StartupManager.SetEnabled(startupCheckBox.Checked);
             };
             Controls.Add(startupCheckBox);
 
-            AddLabel("经文库", 30, 296);
+            AddLabel("经文库", 30, 316);
             dataLabel.AutoSize = true;
-            dataLabel.Location = new Point(120, 296);
+            dataLabel.Location = new Point(120, 316);
             Controls.Add(dataLabel);
 
             Button closeButton = new Button();
             closeButton.Text = "关闭";
-            closeButton.Location = new Point(390, 328);
+            closeButton.Location = new Point(390, 348);
             closeButton.Width = 80;
             closeButton.Click += delegate { Hide(); };
             Controls.Add(closeButton);

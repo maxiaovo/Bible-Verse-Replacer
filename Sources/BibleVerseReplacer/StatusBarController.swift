@@ -39,6 +39,10 @@ final class StatusBarController: NSObject {
         shortcutItem.isEnabled = false
         menu.addItem(shortcutItem)
 
+        let authorItem = NSMenuItem(title: "作者：大侠请留步", action: nil, keyEquivalent: "")
+        authorItem.isEnabled = false
+        menu.addItem(authorItem)
+
         menu.addItem(.separator())
 
         let settingsItem = NSMenuItem(title: "设置...", action: #selector(openSettings), keyEquivalent: ",")
@@ -86,4 +90,3 @@ final class StatusBarController: NSObject {
         onQuit()
     }
 }
-

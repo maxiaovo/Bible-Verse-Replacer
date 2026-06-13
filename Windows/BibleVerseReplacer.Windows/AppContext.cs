@@ -1,5 +1,4 @@
 using System;
-using System.Drawing;
 using System.Windows.Forms;
 
 namespace BibleVerseReplacer.Windows
@@ -14,7 +13,7 @@ namespace BibleVerseReplacer.Windows
         public TrayAppContext()
         {
             notifyIcon = new NotifyIcon();
-            notifyIcon.Icon = SystemIcons.Application;
+            notifyIcon.Icon = AppIcons.Current;
             notifyIcon.Text = "Bible Verse Replacer";
             notifyIcon.Visible = true;
 
@@ -45,6 +44,7 @@ namespace BibleVerseReplacer.Windows
             ContextMenuStrip menu = new ContextMenuStrip();
             menu.Items.Add("替换所选经文", null, delegate { replacementCoordinator.ReplaceSelection(); });
             menu.Items.Add("当前快捷键：" + UserPreferences.Instance.Shortcut.DisplayText).Enabled = false;
+            menu.Items.Add("作者：大侠请留步").Enabled = false;
             menu.Items.Add(new ToolStripSeparator());
             menu.Items.Add("设置...", null, delegate { ShowSettings(); });
             menu.Items.Add("经文库：" + BibleStore.Instance.SourceSummary).Enabled = false;
@@ -80,4 +80,3 @@ namespace BibleVerseReplacer.Windows
         }
     }
 }
-
