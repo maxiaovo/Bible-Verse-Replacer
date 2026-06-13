@@ -37,11 +37,13 @@ jobs:
           changed="$(git diff --name-only "$base" HEAD)"
           echo "$changed"
 
-          product_changes="$(echo "$changed" | grep -E '^(Sources/|Windows/|Resources/|Assets/|Scripts/|Info\.plist|Makefile|BibleVerseReplacer\.sln)' || true)"
+          product_changes="$(echo "$changed" | grep -E '^(Sources/|Windows/|Resources/|Assets/|Scripts/|Info\.plist|Makefile|BibleVerseReplacer\.sln|\.github/workflows/)' || true)"
           if [[ -z "$product_changes" ]]; then
             echo "No product-facing changes detected."
             exit 0
           fi
+
+          windows_changes="$(echo "$changed" | grep -E '^(Windows/|BibleVerseReplacer\.sln)' || true)"
 
           missing=0
           require_changed_file() {
@@ -54,7 +56,12 @@ jobs:
 
           require_changed_file "README.md"
           require_changed_file "Info.plist"
-          require_changed_file "Windows/BibleVerseReplacer.Windows/Properties/AssemblyInfo.cs"
+
+          if [[ -n "$windows_changes" ]]; then
+            require_changed_file "Windows/BibleVerseReplacer.Windows/Properties/AssemblyInfo.cs"
+          else
+            echo "Windows work is manual-by-request; Windows version files are not required for macOS-only product changes."
+          fi
 
           version="$(perl -0ne 'print $1 if /CFBundleShortVersionString<\/key>\s*<string>([^<]+)<\/string>/' Info.plist)"
           build="$(perl -0ne 'print $1 if /CFBundleVersion<\/key>\s*<string>([^<]+)<\/string>/' Info.plist)"
@@ -66,7 +73,7 @@ jobs:
             missing=1
           fi
 
-          if [[ "$version" != "$win_version" || "$version" != "$win_file_version" ]]; then
+          if [[ -n "$windows_changes" && ( "$version" != "$win_version" || "$version" != "$win_file_version" ) ]]; then
             echo "::error file=Windows/BibleVerseReplacer.Windows/Properties/AssemblyInfo.cs::Windows version must match Info.plist version $version."
             missing=1
           fi

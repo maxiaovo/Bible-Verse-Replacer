@@ -269,6 +269,8 @@ enum SelfTest {
                 throw TestFailure("Expected article output to contain \(fragment), got \(articleResult.text)")
             }
 
+            try assertUpdateDownloadStaging()
+
             print("Self-test passed")
             return 0
         } catch {
@@ -350,6 +352,27 @@ enum SelfTest {
             combinedPassageMode: combinedPassageMode,
             quotationStyle: quotationStyle
         )
+    }
+
+    private static func assertUpdateDownloadStaging() throws {
+        let tempDirectory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("BibleVerseReplacerSelfTest-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: tempDirectory, withIntermediateDirectories: true)
+        defer {
+            try? FileManager.default.removeItem(at: tempDirectory)
+        }
+
+        let downloadURL = tempDirectory.appendingPathComponent("CFNetworkDownload_test.tmp")
+        let payload = Data("zip payload".utf8)
+        try payload.write(to: downloadURL)
+
+        let stagedURL = try UpdateInstaller.stageDownloadedFile(at: downloadURL, tempDirectory: tempDirectory)
+        guard stagedURL.lastPathComponent == "update.zip",
+              FileManager.default.fileExists(atPath: stagedURL.path),
+              !FileManager.default.fileExists(atPath: downloadURL.path),
+              try Data(contentsOf: stagedURL) == payload else {
+            throw TestFailure("Expected updater to synchronously move temporary download to stable update.zip")
+        }
     }
 }
 

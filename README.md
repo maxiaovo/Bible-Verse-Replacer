@@ -4,7 +4,7 @@ Bible Verse Replacer 是一个常驻后台的小工具。写文章、讲章、�
 
 作者：大侠请留步
 
-当前版本：v0.1.9
+当前版本：v0.1.10
 
 [English](#english)
 
@@ -12,8 +12,8 @@ Bible Verse Replacer 是一个常驻后台的小工具。写文章、讲章、�
 
 到 [Releases](https://github.com/maxiaovo/Bible-Verse-Replacer/releases) 下载最新版：
 
-- macOS：`BibleVerseReplacer-v0.1.9.zip`，支持 macOS 13 Ventura 及以上。
-- Windows：`BibleVerseReplacer-Windows-v0.1.9.zip`，支持 Windows 7 SP1 及以上，需要 .NET Framework 4.8。
+- macOS：`BibleVerseReplacer-v0.1.10.zip`，支持 macOS 13 Ventura 及以上。
+- Windows：目前保留 `BibleVerseReplacer-Windows-v0.1.9.zip`，支持 Windows 7 SP1 及以上，需要 .NET Framework 4.8。Windows 版后续按需更新。
 
 目前还没有 Apple 公证或 Windows 代码签名。macOS 如果提示无法打开，请在 Finder 里右键 App，选择“打开”。
 
@@ -21,7 +21,7 @@ Bible Verse Replacer 是一个常驻后台的小工具。写文章、讲章、�
 
 ### macOS
 
-1. 解压 `BibleVerseReplacer-v0.1.9.zip`。
+1. 解压 `BibleVerseReplacer-v0.1.10.zip`。
 2. 把 `BibleVerseReplacer.app` 放到“应用程序”文件夹。
 3. 打开 App，菜单栏会出现一个“经”字图标。
 4. 按提示授予“辅助功能”权限。这个权限只用于模拟复制和粘贴。
@@ -111,6 +111,8 @@ Genesis 4:1
 
 默认会自动检查 GitHub Releases。发现新版本后，可以直接下载并自动安装；安装时会显示进度条，完成后自动重启程序。
 
+如果你正在使用 v0.1.7 到 v0.1.9，并且自动更新提示下载临时文件不存在，请手动下载最新版覆盖一次。v0.1.10 修复了这个自动更新安装问题，之后的更新会更稳定。
+
 ## 离线与隐私
 
 经文替换不需要联网。经文库已经离线内置在 App 里。
@@ -130,14 +132,14 @@ Bible Verse Replacer is a small background utility for replacing selected Bible 
 
 Author: 大侠请留步
 
-Current version: v0.1.9
+Current version: v0.1.10
 
 ## Download
 
 Download the latest release from [Releases](https://github.com/maxiaovo/Bible-Verse-Replacer/releases):
 
-- macOS: `BibleVerseReplacer-v0.1.9.zip`, macOS 13 Ventura or later.
-- Windows: `BibleVerseReplacer-Windows-v0.1.9.zip`, Windows 7 SP1 or later, with .NET Framework 4.8.
+- macOS: `BibleVerseReplacer-v0.1.10.zip`, macOS 13 Ventura or later.
+- Windows: `BibleVerseReplacer-Windows-v0.1.9.zip` remains available for Windows 7 SP1 or later with .NET Framework 4.8. Windows updates are now maintained by request.
 
 The app is not notarized or code-signed yet. On macOS, if the system blocks the app, right-click it in Finder and choose Open.
 
@@ -145,7 +147,7 @@ The app is not notarized or code-signed yet. On macOS, if the system blocks the 
 
 ### macOS
 
-1. Unzip `BibleVerseReplacer-v0.1.9.zip`.
+1. Unzip `BibleVerseReplacer-v0.1.10.zip`.
 2. Move `BibleVerseReplacer.app` to Applications.
 3. Open the app. A “经” icon appears in the menu bar.
 4. Grant Accessibility permission when prompted. This is used only to simulate copy and paste.
@@ -208,6 +210,8 @@ You can change:
 ## Updates
 
 Automatic update checks are on by default. When a new release is available, the app can download and install it with a progress bar, then restart itself.
+
+If you are using v0.1.7 through v0.1.9 and automatic update reports a missing temporary download file, please install the latest version manually once. v0.1.10 fixes that updater installer issue for future updates.
 
 ## Offline and Privacy
 

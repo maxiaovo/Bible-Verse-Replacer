@@ -1,16 +1,7 @@
-name: Build Windows
+name: Build Windows (manual)
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-    paths:
-      - "Windows/**"
-      - "Resources/Bible/**"
-      - "BibleVerseReplacer.sln"
-      - "README.md"
-      - ".github/workflows/build-windows.yml"
 
 jobs:
   build:

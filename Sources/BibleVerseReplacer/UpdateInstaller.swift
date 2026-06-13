@@ -94,7 +94,16 @@ final class UpdateInstaller: NSObject {
         NSApp.activate(ignoringOtherApps: true)
     }
 
-    private func prepareAndInstall(from downloadedFile: URL) {
+    static func stageDownloadedFile(at location: URL, tempDirectory: URL) throws -> URL {
+        let zipURL = tempDirectory.appendingPathComponent("update.zip")
+        if FileManager.default.fileExists(atPath: zipURL.path) {
+            try FileManager.default.removeItem(at: zipURL)
+        }
+        try FileManager.default.moveItem(at: location, to: zipURL)
+        return zipURL
+    }
+
+    private func prepareAndInstall(fromStagedZip zipURL: URL) {
         guard let tempDirectory else {
             showError(UpdateInstallError.missingTempDirectory)
             return
@@ -107,12 +116,6 @@ final class UpdateInstaller: NSObject {
 
         DispatchQueue.global(qos: .userInitiated).async {
             do {
-                let zipURL = tempDirectory.appendingPathComponent("update.zip")
-                if FileManager.default.fileExists(atPath: zipURL.path) {
-                    try FileManager.default.removeItem(at: zipURL)
-                }
-                try FileManager.default.moveItem(at: downloadedFile, to: zipURL)
-
                 let extractDirectory = tempDirectory.appendingPathComponent("extracted", isDirectory: true)
                 try FileManager.default.createDirectory(at: extractDirectory, withIntermediateDirectories: true)
                 try Self.run("/usr/bin/ditto", arguments: ["-x", "-k", zipURL.path, extractDirectory.path])
@@ -233,7 +236,17 @@ final class UpdateInstaller: NSObject {
 
 extension UpdateInstaller: URLSessionDownloadDelegate {
     func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
-        prepareAndInstall(from: location)
+        do {
+            guard let tempDirectory else {
+                throw UpdateInstallError.missingTempDirectory
+            }
+            let zipURL = try Self.stageDownloadedFile(at: location, tempDirectory: tempDirectory)
+            prepareAndInstall(fromStagedZip: zipURL)
+        } catch {
+            DispatchQueue.main.async {
+                self.showError(error)
+            }
+        }
     }
 
     func urlSession(
