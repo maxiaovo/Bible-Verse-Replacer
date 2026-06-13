@@ -9,11 +9,13 @@ namespace BibleVerseReplacer.Windows
         private readonly ClipboardService clipboard = new ClipboardService();
         private readonly ReferenceParser parser = new ReferenceParser();
         private readonly VerseFormatter formatter = new VerseFormatter();
+        private readonly ArticleReferenceReplacer articleReplacer;
         private readonly NotifyIcon notifyIcon;
 
         public ReplacementCoordinator(NotifyIcon notifyIcon)
         {
             this.notifyIcon = notifyIcon;
+            articleReplacer = new ArticleReferenceReplacer(parser, formatter);
         }
 
         public void ReplaceSelection()
@@ -39,7 +41,8 @@ namespace BibleVerseReplacer.Windows
                     UserPreferences.Instance.OutputFormat,
                     UserPreferences.Instance.ReferenceLabelMode,
                     selectedText,
-                    UserPreferences.Instance.CombinedPassageMode);
+                    UserPreferences.Instance.CombinedPassageMode,
+                    UserPreferences.Instance.QuotationStyle);
 
                 clipboard.Paste(replacement);
                 Timer restoreTimer = new Timer();
@@ -54,8 +57,29 @@ namespace BibleVerseReplacer.Windows
             }
             catch (Exception ex)
             {
-                clipboard.Restore(snapshot);
-                Notify(ex.Message);
+                ArticleReplacementResult articleResult = articleReplacer.ReplaceReferences(
+                    selectedText,
+                    UserPreferences.Instance.OutputFormat,
+                    UserPreferences.Instance.ReferenceLabelMode,
+                    UserPreferences.Instance.CombinedPassageMode,
+                    UserPreferences.Instance.QuotationStyle);
+                if (!articleResult.Changed)
+                {
+                    clipboard.Restore(snapshot);
+                    Notify(articleResult.SkippedExisting > 0 ? "已检测到经文正文，无需重复替换" : ex.Message);
+                    return;
+                }
+
+                clipboard.Paste(articleResult.Text);
+                Timer restoreTimer = new Timer();
+                restoreTimer.Interval = 350;
+                restoreTimer.Tick += delegate
+                {
+                    restoreTimer.Stop();
+                    restoreTimer.Dispose();
+                    clipboard.Restore(snapshot);
+                };
+                restoreTimer.Start();
             }
         }
 

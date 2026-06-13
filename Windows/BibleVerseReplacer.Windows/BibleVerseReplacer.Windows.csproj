@@ -50,6 +50,7 @@
     <Compile Include="AppContext.cs" />
     <Compile Include="AppIcons.cs" />
     <Compile Include="AppInfo.cs" />
+    <Compile Include="ArticleReferenceReplacer.cs" />
     <Compile Include="BibleBookCatalog.cs" />
     <Compile Include="BibleModels.cs" />
     <Compile Include="BibleStore.cs" />

@@ -23,6 +23,13 @@ namespace BibleVerseReplacer.Windows
         GroupedLines = 1
     }
 
+    internal enum QuotationStyle
+    {
+        FullWidth = 0,
+        HalfWidth = 1,
+        Square = 2
+    }
+
     internal sealed class UserPreferences
     {
         public static readonly UserPreferences Instance = new UserPreferences();
@@ -32,6 +39,7 @@ namespace BibleVerseReplacer.Windows
         private const string OutputFormatName = "OutputFormat";
         private const string ReferenceLabelModeName = "ReferenceLabelMode";
         private const string CombinedPassageModeName = "CombinedPassageMode";
+        private const string QuotationStyleName = "QuotationStyle";
         private const string AutoCheckUpdatesName = "AutoCheckUpdates";
 
         private UserPreferences()
@@ -126,6 +134,34 @@ namespace BibleVerseReplacer.Windows
                 using (RegistryKey key = Registry.CurrentUser.CreateSubKey(RegistryPath))
                 {
                     key.SetValue(CombinedPassageModeName, (int)value);
+                }
+            }
+        }
+
+        public QuotationStyle QuotationStyle
+        {
+            get
+            {
+                using (RegistryKey key = Registry.CurrentUser.OpenSubKey(RegistryPath))
+                {
+                    object raw = key == null ? null : key.GetValue(QuotationStyleName);
+                    int value;
+                    if (raw == null || !int.TryParse(raw.ToString(), out value))
+                    {
+                        return QuotationStyle.FullWidth;
+                    }
+                    return value == (int)QuotationStyle.HalfWidth
+                        ? QuotationStyle.HalfWidth
+                        : value == (int)QuotationStyle.Square
+                            ? QuotationStyle.Square
+                            : QuotationStyle.FullWidth;
+                }
+            }
+            set
+            {
+                using (RegistryKey key = Registry.CurrentUser.CreateSubKey(RegistryPath))
+                {
+                    key.SetValue(QuotationStyleName, (int)value);
                 }
             }
         }

@@ -4,6 +4,7 @@ final class ReplacementCoordinator {
     private let clipboard = ClipboardService()
     private let parser = ReferenceParser()
     private let formatter = VerseFormatter()
+    private let articleReplacer: ArticleReferenceReplacer
     private let bibleStore: BibleStore
     private let preferences: UserPreferences
     private let notifier: UserNotifier
@@ -16,6 +17,7 @@ final class ReplacementCoordinator {
         self.bibleStore = bibleStore
         self.preferences = preferences
         self.notifier = notifier
+        self.articleReplacer = ArticleReferenceReplacer(parser: parser, formatter: formatter, bibleStore: bibleStore)
     }
 
     func replaceSelection() {
@@ -44,7 +46,8 @@ final class ReplacementCoordinator {
                 format: preferences.outputFormat,
                 labelMode: preferences.referenceLabelMode,
                 originalReference: selectedText,
-                combinedPassageMode: preferences.combinedPassageMode
+                combinedPassageMode: preferences.combinedPassageMode,
+                quotationStyle: preferences.quotationStyle
             )
             clipboard.paste(replacement)
 
@@ -52,8 +55,23 @@ final class ReplacementCoordinator {
                 self.clipboard.restore(originalClipboard)
             }
         } catch {
-            clipboard.restore(originalClipboard)
-            notifier.notify(error.localizedDescription)
+            let articleResult = articleReplacer.replaceReferences(
+                in: selectedText,
+                format: preferences.outputFormat,
+                labelMode: preferences.referenceLabelMode,
+                combinedPassageMode: preferences.combinedPassageMode,
+                quotationStyle: preferences.quotationStyle
+            )
+            guard articleResult.changed else {
+                clipboard.restore(originalClipboard)
+                notifier.notify(articleResult.skippedExisting > 0 ? "已检测到经文正文，无需重复替换" : error.localizedDescription)
+                return
+            }
+            clipboard.paste(articleResult.text)
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                self.clipboard.restore(originalClipboard)
+            }
         }
     }
 }

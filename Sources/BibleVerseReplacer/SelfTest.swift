@@ -7,6 +7,7 @@ enum SelfTest {
 
             let parser = ReferenceParser()
             let formatter = VerseFormatter()
+            let articleReplacer = ArticleReferenceReplacer(parser: parser, formatter: formatter)
             let preferencesFormat = OutputFormat.referenceVerseLines
 
             try assertFormatted(
@@ -71,7 +72,7 @@ enum SelfTest {
 
             try assertFormatted(
                 raw: "约翰 3:16",
-                expectedPrefix: "约翰福音 3:16 「神爱世人",
+                expectedPrefix: "约翰福音 3:16 “神爱世人",
                 parser: parser,
                 formatter: formatter,
                 format: .referenceVerseLines
@@ -79,7 +80,7 @@ enum SelfTest {
 
             try assertFormatted(
                 raw: "创1:1-3，7",
-                expected: "创世记 1:1-3,7 起初，神创造天地。地是空虚混沌，渊面黑暗；神的灵运行在水面上。神说：「要有光」，就有了光。……神就造出空气，将空气以下的水、空气以上的水分开了。事就这样成了。",
+                expected: "创世记 1:1-3,7 起初，神创造天地。地是空虚混沌，渊面黑暗；神的灵运行在水面上。神说：“要有光”，就有了光。……神就造出空气，将空气以下的水、空气以上的水分开了。事就这样成了。",
                 parser: parser,
                 formatter: formatter,
                 format: .continuousText,
@@ -88,7 +89,7 @@ enum SelfTest {
 
             try assertFormatted(
                 raw: "创1:1-3，7",
-                expected: "创世记 1:1-3 起初，神创造天地。地是空虚混沌，渊面黑暗；神的灵运行在水面上。神说：「要有光」，就有了光。\n创世记 1:7 神就造出空气，将空气以下的水、空气以上的水分开了。事就这样成了。",
+                expected: "创世记 1:1-3 起初，神创造天地。地是空虚混沌，渊面黑暗；神的灵运行在水面上。神说：“要有光”，就有了光。\n创世记 1:7 神就造出空气，将空气以下的水、空气以上的水分开了。事就这样成了。",
                 parser: parser,
                 formatter: formatter,
                 format: .continuousText,
@@ -168,11 +169,31 @@ enum SelfTest {
             try assertFormatted(
                 raw: "约 3:16，罗 8:28",
                 expected: [
-                    "约翰福音 3:16 「神爱世人",
+                    "约翰福音 3:16 “神爱世人",
                     "罗马书 8:28 我们晓得万事都互相效力"
                 ],
                 parser: parser,
                 formatter: formatter
+            )
+
+            try assertFormatted(
+                raw: "创1:3",
+                expected: "创世记 1:3 神说：\"要有光\"，就有了光。",
+                parser: parser,
+                formatter: formatter,
+                format: .continuousText,
+                labelMode: .normalizedFull,
+                quotationStyle: .halfWidth
+            )
+
+            try assertFormatted(
+                raw: "创1:3",
+                expected: "创世记 1:3 神说：「要有光」，就有了光。",
+                parser: parser,
+                formatter: formatter,
+                format: .continuousText,
+                labelMode: .normalizedFull,
+                quotationStyle: .square
             )
 
             try assertFormatted(
@@ -229,6 +250,25 @@ enum SelfTest {
                 // Expected.
             }
 
+            let article = "今天读：创世记 1:1\n还有 马可 5:8\n已经替换：创世记 1:1 起初，神创造天地。"
+            let articleResult = articleReplacer.replaceReferences(
+                in: article,
+                format: .continuousText,
+                labelMode: .normalizedFull,
+                combinedPassageMode: .compactEllipsis,
+                quotationStyle: .fullWidth
+            )
+            if articleResult.replacements != 2 || articleResult.skippedExisting != 1 {
+                throw TestFailure("Expected 2 article replacements and 1 skip, got \(articleResult.replacements) replacements and \(articleResult.skippedExisting) skips")
+            }
+            for fragment in [
+                "今天读：创世记 1:1 起初，神创造天地。",
+                "还有 马可福音 5:8 是因耶稣曾吩咐他说",
+                "已经替换：创世记 1:1 起初，神创造天地。"
+            ] where !articleResult.text.contains(fragment) {
+                throw TestFailure("Expected article output to contain \(fragment), got \(articleResult.text)")
+            }
+
             print("Self-test passed")
             return 0
         } catch {
@@ -254,9 +294,10 @@ enum SelfTest {
         formatter: VerseFormatter,
         format: OutputFormat,
         labelMode: ReferenceLabelMode,
-        combinedPassageMode: CombinedPassageMode = .compactEllipsis
+        combinedPassageMode: CombinedPassageMode = .compactEllipsis,
+        quotationStyle: QuotationStyle = .fullWidth
     ) throws {
-        let actual = try formatted(raw: raw, parser: parser, formatter: formatter, format: format, labelMode: labelMode, combinedPassageMode: combinedPassageMode)
+        let actual = try formatted(raw: raw, parser: parser, formatter: formatter, format: format, labelMode: labelMode, combinedPassageMode: combinedPassageMode, quotationStyle: quotationStyle)
         if actual != expected {
             throw TestFailure("For \(raw), expected \(expected), got \(actual)")
         }
@@ -293,7 +334,8 @@ enum SelfTest {
         formatter: VerseFormatter,
         format: OutputFormat,
         labelMode: ReferenceLabelMode,
-        combinedPassageMode: CombinedPassageMode = .compactEllipsis
+        combinedPassageMode: CombinedPassageMode = .compactEllipsis,
+        quotationStyle: QuotationStyle = .fullWidth
     ) throws -> String {
         let reference = try parser.parseSelection(raw)
         let verseGroups = try BibleStore.shared.verseGroups(for: reference)
@@ -305,7 +347,8 @@ enum SelfTest {
             format: format,
             labelMode: labelMode,
             originalReference: raw,
-            combinedPassageMode: combinedPassageMode
+            combinedPassageMode: combinedPassageMode,
+            quotationStyle: quotationStyle
         )
     }
 }

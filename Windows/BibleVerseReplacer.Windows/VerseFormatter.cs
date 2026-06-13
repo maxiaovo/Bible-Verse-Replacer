@@ -19,7 +19,8 @@ namespace BibleVerseReplacer.Windows
                 format,
                 labelMode,
                 originalReference,
-                CombinedPassageMode.CompactEllipsis);
+                CombinedPassageMode.CompactEllipsis,
+                QuotationStyle.FullWidth);
         }
 
         public string Format(
@@ -31,16 +32,37 @@ namespace BibleVerseReplacer.Windows
             string originalReference,
             CombinedPassageMode combinedPassageMode)
         {
+            return Format(
+                parsedReference,
+                verses,
+                verseGroups,
+                format,
+                labelMode,
+                originalReference,
+                combinedPassageMode,
+                QuotationStyle.FullWidth);
+        }
+
+        public string Format(
+            ParsedReference parsedReference,
+            IList<BibleVerse> verses,
+            IList<PassageVerseGroup> verseGroups,
+            OutputFormat format,
+            ReferenceLabelMode labelMode,
+            string originalReference,
+            CombinedPassageMode combinedPassageMode,
+            QuotationStyle quotationStyle)
+        {
             switch (format)
             {
                 case OutputFormat.ContinuousText:
-                    return FormatContinuous(parsedReference, verses, verseGroups, labelMode, originalReference, combinedPassageMode);
+                    return FormatContinuous(parsedReference, verses, verseGroups, labelMode, originalReference, combinedPassageMode, quotationStyle);
                 case OutputFormat.ReferenceHeader:
-                    return parsedReference.DisplayText + "\r\n" + JoinLines(verses, false, null);
+                    return parsedReference.DisplayText + "\r\n" + JoinLines(verses, false, null, quotationStyle);
                 case OutputFormat.NumberedVerses:
-                    return ApplyLabelIfNeeded(parsedReference, JoinNumbered(verses), labelMode, originalReference, "\r\n");
+                    return ApplyLabelIfNeeded(parsedReference, JoinNumbered(verses, quotationStyle), labelMode, originalReference, "\r\n");
                 default:
-                    return JoinLines(verses, true, null);
+                    return JoinLines(verses, true, null, quotationStyle);
             }
         }
 
@@ -65,25 +87,26 @@ namespace BibleVerseReplacer.Windows
             IList<PassageVerseGroup> verseGroups,
             ReferenceLabelMode labelMode,
             string originalReference,
-            CombinedPassageMode combinedPassageMode)
+            CombinedPassageMode combinedPassageMode,
+            QuotationStyle quotationStyle)
         {
             if (verseGroups == null || verseGroups.Count == 0)
             {
-                return ApplyLabelIfNeeded(parsedReference, JoinContinuous(verses), labelMode, originalReference, " ");
+                return ApplyLabelIfNeeded(parsedReference, JoinContinuous(verses, quotationStyle), labelMode, originalReference, " ");
             }
 
             if (combinedPassageMode == CombinedPassageMode.GroupedLines)
             {
-                return JoinGroupedContinuous(verseGroups, labelMode, originalReference);
+                return JoinGroupedContinuous(verseGroups, labelMode, originalReference, quotationStyle);
             }
 
             return ApplyLabelTextIfNeeded(
                 LabelText(parsedReference, labelMode, originalReference, parsedReference.CompactDisplayText),
-                JoinGroupBodies(verseGroups, "……"),
+                JoinGroupBodies(verseGroups, "……", quotationStyle),
                 " ");
         }
 
-        private static string JoinLines(IList<BibleVerse> verses, bool includeBook, VerseReference reference)
+        private static string JoinLines(IList<BibleVerse> verses, bool includeBook, VerseReference reference, QuotationStyle quotationStyle)
         {
             StringBuilder builder = new StringBuilder();
             for (int index = 0; index < verses.Count; index++)
@@ -100,12 +123,12 @@ namespace BibleVerseReplacer.Windows
                     builder.Append(verse.ReferenceVerseText);
                     builder.Append(' ');
                 }
-                builder.Append(CleanText(verse.Text));
+                builder.Append(CleanText(verse.Text, quotationStyle));
             }
             return builder.ToString();
         }
 
-        private static string JoinNumbered(IList<BibleVerse> verses)
+        private static string JoinNumbered(IList<BibleVerse> verses, QuotationStyle quotationStyle)
         {
             StringBuilder builder = new StringBuilder();
             for (int index = 0; index < verses.Count; index++)
@@ -117,22 +140,22 @@ namespace BibleVerseReplacer.Windows
                 }
                 builder.Append(verse.VerseLabel);
                 builder.Append(' ');
-                builder.Append(CleanText(verse.Text));
+                builder.Append(CleanText(verse.Text, quotationStyle));
             }
             return builder.ToString();
         }
 
-        private static string JoinContinuous(IList<BibleVerse> verses)
+        private static string JoinContinuous(IList<BibleVerse> verses, QuotationStyle quotationStyle)
         {
             StringBuilder builder = new StringBuilder();
             foreach (BibleVerse verse in verses)
             {
-                builder.Append(CleanText(verse.Text));
+                builder.Append(CleanText(verse.Text, quotationStyle));
             }
             return builder.ToString();
         }
 
-        private static string JoinGroupBodies(IList<PassageVerseGroup> verseGroups, string separator)
+        private static string JoinGroupBodies(IList<PassageVerseGroup> verseGroups, string separator, QuotationStyle quotationStyle)
         {
             StringBuilder builder = new StringBuilder();
             for (int index = 0; index < verseGroups.Count; index++)
@@ -141,7 +164,7 @@ namespace BibleVerseReplacer.Windows
                 {
                     builder.Append(separator);
                 }
-                builder.Append(JoinContinuous(verseGroups[index].Verses));
+                builder.Append(JoinContinuous(verseGroups[index].Verses, quotationStyle));
             }
             return builder.ToString();
         }
@@ -149,7 +172,8 @@ namespace BibleVerseReplacer.Windows
         private static string JoinGroupedContinuous(
             IList<PassageVerseGroup> verseGroups,
             ReferenceLabelMode labelMode,
-            string originalReference)
+            string originalReference,
+            QuotationStyle quotationStyle)
         {
             StringBuilder builder = new StringBuilder();
             for (int index = 0; index < verseGroups.Count; index++)
@@ -162,15 +186,28 @@ namespace BibleVerseReplacer.Windows
                 PassageVerseGroup group = verseGroups[index];
                 builder.Append(ApplyLabelTextIfNeeded(
                     GroupLabelText(group, verseGroups.Count, labelMode, originalReference),
-                    JoinContinuous(group.Verses),
+                    JoinContinuous(group.Verses, quotationStyle),
                     " "));
             }
             return builder.ToString();
         }
 
-        private static string CleanText(string text)
+        public static string CleanText(string text, QuotationStyle quotationStyle)
         {
-            return (text ?? string.Empty).Replace("\u3000", string.Empty).Trim();
+            return ApplyQuotationStyle(text ?? string.Empty, quotationStyle).Replace("\u3000", string.Empty).Trim();
+        }
+
+        private static string ApplyQuotationStyle(string text, QuotationStyle quotationStyle)
+        {
+            switch (quotationStyle)
+            {
+                case QuotationStyle.HalfWidth:
+                    return text.Replace("「", "\"").Replace("」", "\"");
+                case QuotationStyle.Square:
+                    return text;
+                default:
+                    return text.Replace("「", "“").Replace("」", "”");
+            }
         }
 
         private static string ApplyLabelIfNeeded(

@@ -11,6 +11,7 @@ namespace BibleVerseReplacer.Windows
         private readonly ComboBox outputFormatComboBox = new ComboBox();
         private readonly ComboBox referenceLabelComboBox = new ComboBox();
         private readonly ComboBox combinedPassageComboBox = new ComboBox();
+        private readonly ComboBox quotationStyleComboBox = new ComboBox();
         private readonly CheckBox autoUpdateCheckBox = new CheckBox();
         private readonly CheckBox startupCheckBox = new CheckBox();
         private readonly Label dataLabel = new Label();
@@ -77,38 +78,15 @@ namespace BibleVerseReplacer.Windows
             Controls.Add(subtitle);
 
             Label author = new Label();
-            author.Text = "作者：大侠请留步";
+            author.Text = "作者：大侠请留步 · 版本：" + AppInfo.VersionDisplay;
             author.AutoSize = true;
             author.ForeColor = SystemColors.GrayText;
-            author.Location = new Point(26, 76);
+            author.Location = new Point(26, 410);
             Controls.Add(author);
 
-            Label version = new Label();
-            version.Text = "版本：" + AppInfo.VersionDisplay;
-            version.AutoSize = true;
-            version.ForeColor = SystemColors.GrayText;
-            version.Location = new Point(26, 96);
-            Controls.Add(version);
-
-            AddLabel("仓库", 30, 124);
-            TextBox repositoryTextBox = new TextBox();
-            repositoryTextBox.ReadOnly = true;
-            repositoryTextBox.Text = AppInfo.RepositoryUrl;
-            repositoryTextBox.Location = new Point(120, 120);
-            repositoryTextBox.Width = 330;
-            repositoryTextBox.TabStop = false;
-            Controls.Add(repositoryTextBox);
-
-            Button repositoryButton = new Button();
-            repositoryButton.Text = "打开";
-            repositoryButton.Location = new Point(462, 118);
-            repositoryButton.Width = 80;
-            repositoryButton.Click += delegate { System.Diagnostics.Process.Start(AppInfo.RepositoryUrl); };
-            Controls.Add(repositoryButton);
-
-            AddLabel("快捷键", 30, 160);
+            AddLabel("快捷键", 30, 92);
             shortcutTextBox.ReadOnly = true;
-            shortcutTextBox.Location = new Point(120, 156);
+            shortcutTextBox.Location = new Point(120, 88);
             shortcutTextBox.Width = 220;
             shortcutTextBox.TabStop = false;
             shortcutTextBox.Click += delegate
@@ -121,7 +99,7 @@ namespace BibleVerseReplacer.Windows
 
             Button recordButton = new Button();
             recordButton.Text = "录制";
-            recordButton.Location = new Point(352, 154);
+            recordButton.Location = new Point(352, 86);
             recordButton.Width = 80;
             recordButton.Click += delegate
             {
@@ -131,9 +109,9 @@ namespace BibleVerseReplacer.Windows
             };
             Controls.Add(recordButton);
 
-            AddLabel("输出格式", 30, 202);
+            AddLabel("输出格式", 30, 134);
             outputFormatComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
-            outputFormatComboBox.Location = new Point(120, 198);
+            outputFormatComboBox.Location = new Point(120, 130);
             outputFormatComboBox.Width = 260;
             outputFormatComboBox.Items.Add("书卷 章:节 经文");
             outputFormatComboBox.Items.Add("连续正文");
@@ -148,9 +126,9 @@ namespace BibleVerseReplacer.Windows
             };
             Controls.Add(outputFormatComboBox);
 
-            AddLabel("引用标签", 30, 240);
+            AddLabel("引用标签", 30, 172);
             referenceLabelComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
-            referenceLabelComboBox.Location = new Point(120, 236);
+            referenceLabelComboBox.Location = new Point(120, 168);
             referenceLabelComboBox.Width = 260;
             referenceLabelComboBox.Items.Add("改写为完整标签");
             referenceLabelComboBox.Items.Add("保留输入标签");
@@ -164,9 +142,9 @@ namespace BibleVerseReplacer.Windows
             };
             Controls.Add(referenceLabelComboBox);
 
-            AddLabel("组合显示", 30, 278);
+            AddLabel("组合显示", 30, 210);
             combinedPassageComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
-            combinedPassageComboBox.Location = new Point(120, 274);
+            combinedPassageComboBox.Location = new Point(120, 206);
             combinedPassageComboBox.Width = 260;
             combinedPassageComboBox.Items.Add("合并为一段（省略号连接）");
             combinedPassageComboBox.Items.Add("按片段分行");
@@ -179,9 +157,25 @@ namespace BibleVerseReplacer.Windows
             };
             Controls.Add(combinedPassageComboBox);
 
+            AddLabel("引号样式", 30, 248);
+            quotationStyleComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
+            quotationStyleComboBox.Location = new Point(120, 244);
+            quotationStyleComboBox.Width = 260;
+            quotationStyleComboBox.Items.Add("全角引号 “ ”");
+            quotationStyleComboBox.Items.Add("半角引号 \" \"");
+            quotationStyleComboBox.Items.Add("保留方引号 「 」");
+            quotationStyleComboBox.SelectedIndexChanged += delegate
+            {
+                if (quotationStyleComboBox.SelectedIndex >= 0)
+                {
+                    UserPreferences.Instance.QuotationStyle = (QuotationStyle)quotationStyleComboBox.SelectedIndex;
+                }
+            };
+            Controls.Add(quotationStyleComboBox);
+
             autoUpdateCheckBox.Text = "自动检查更新";
             autoUpdateCheckBox.AutoSize = true;
-            autoUpdateCheckBox.Location = new Point(120, 316);
+            autoUpdateCheckBox.Location = new Point(120, 286);
             autoUpdateCheckBox.CheckedChanged += delegate
             {
                 UserPreferences.Instance.AutoCheckUpdates = autoUpdateCheckBox.Checked;
@@ -190,21 +184,36 @@ namespace BibleVerseReplacer.Windows
 
             startupCheckBox.Text = "开机自启动";
             startupCheckBox.AutoSize = true;
-            startupCheckBox.Location = new Point(120, 352);
+            startupCheckBox.Location = new Point(120, 322);
             startupCheckBox.CheckedChanged += delegate
             {
                 StartupManager.SetEnabled(startupCheckBox.Checked);
             };
             Controls.Add(startupCheckBox);
 
-            AddLabel("经文库", 30, 396);
+            AddLabel("经文库", 30, 364);
             dataLabel.AutoSize = true;
-            dataLabel.Location = new Point(120, 396);
+            dataLabel.Location = new Point(120, 364);
             Controls.Add(dataLabel);
+
+            TextBox repositoryTextBox = new TextBox();
+            repositoryTextBox.ReadOnly = true;
+            repositoryTextBox.Text = AppInfo.RepositoryUrl;
+            repositoryTextBox.Location = new Point(26, 434);
+            repositoryTextBox.Width = 424;
+            repositoryTextBox.TabStop = false;
+            Controls.Add(repositoryTextBox);
+
+            Button repositoryButton = new Button();
+            repositoryButton.Text = "打开仓库";
+            repositoryButton.Location = new Point(462, 432);
+            repositoryButton.Width = 80;
+            repositoryButton.Click += delegate { System.Diagnostics.Process.Start(AppInfo.RepositoryUrl); };
+            Controls.Add(repositoryButton);
 
             Button closeButton = new Button();
             closeButton.Text = "关闭";
-            closeButton.Location = new Point(462, 430);
+            closeButton.Location = new Point(462, 470);
             closeButton.Width = 80;
             closeButton.Click += delegate { Hide(); };
             Controls.Add(closeButton);
@@ -216,6 +225,7 @@ namespace BibleVerseReplacer.Windows
             outputFormatComboBox.SelectedIndex = (int)UserPreferences.Instance.OutputFormat;
             referenceLabelComboBox.SelectedIndex = (int)UserPreferences.Instance.ReferenceLabelMode;
             combinedPassageComboBox.SelectedIndex = (int)UserPreferences.Instance.CombinedPassageMode;
+            quotationStyleComboBox.SelectedIndex = (int)UserPreferences.Instance.QuotationStyle;
             autoUpdateCheckBox.Checked = UserPreferences.Instance.AutoCheckUpdates;
             startupCheckBox.Checked = StartupManager.IsEnabled;
             dataLabel.Text = BibleStore.Instance.SourceSummary;

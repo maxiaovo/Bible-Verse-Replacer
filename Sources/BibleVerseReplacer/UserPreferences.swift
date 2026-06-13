@@ -10,6 +10,7 @@ final class UserPreferences {
         static let outputFormat = "outputFormat"
         static let referenceLabelMode = "referenceLabelMode"
         static let combinedPassageMode = "combinedPassageMode"
+        static let quotationStyle = "quotationStyle"
         static let autoCheckUpdates = "autoCheckUpdates"
         static let shortcut = "shortcut"
     }
@@ -52,6 +53,20 @@ final class UserPreferences {
         }
         set {
             defaults.set(newValue.rawValue, forKey: Keys.combinedPassageMode)
+            notifyChanged()
+        }
+    }
+
+    var quotationStyle: QuotationStyle {
+        get {
+            guard let raw = defaults.string(forKey: Keys.quotationStyle),
+                  let value = QuotationStyle(rawValue: raw) else {
+                return .fullWidth
+            }
+            return value
+        }
+        set {
+            defaults.set(newValue.rawValue, forKey: Keys.quotationStyle)
             notifyChanged()
         }
     }

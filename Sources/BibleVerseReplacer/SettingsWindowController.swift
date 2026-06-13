@@ -10,12 +10,14 @@ final class SettingsWindowController: NSWindowController {
     private let outputPopup = NSPopUpButton(frame: .zero, pullsDown: false)
     private let referenceLabelPopup = NSPopUpButton(frame: .zero, pullsDown: false)
     private let combinedPassagePopup = NSPopUpButton(frame: .zero, pullsDown: false)
+    private let quotationStylePopup = NSPopUpButton(frame: .zero, pullsDown: false)
     private let permissionStatusLabel = NSTextField(labelWithString: "")
     private let autoUpdateCheckbox = NSButton(checkboxWithTitle: "自动检查更新", target: nil, action: nil)
     private let loginItemCheckbox = NSButton(checkboxWithTitle: "开机自启动", target: nil, action: nil)
     private let loginStatusLabel = NSTextField(labelWithString: "")
     private let bibleInfoLabel = NSTextField(labelWithString: "")
-    private let versionInfoLabel = NSTextField(labelWithString: "")
+    private let footerInfoLabel = NSTextField(labelWithString: "")
+    private let repositoryInfoLabel = NSTextField(labelWithString: AppInfo.repositoryURLString)
 
     init(
         preferences: UserPreferences = .shared,
@@ -59,12 +61,13 @@ final class SettingsWindowController: NSWindowController {
         selectCurrentOutputFormat()
         selectCurrentReferenceLabelMode()
         selectCurrentCombinedPassageMode()
+        selectCurrentQuotationStyle()
         permissionStatusLabel.stringValue = PermissionManager.isAccessibilityTrusted ? "辅助功能权限：已允许" : "辅助功能权限：未允许"
         autoUpdateCheckbox.state = preferences.autoCheckUpdates ? .on : .off
         loginItemCheckbox.state = LoginItemManager.isEnabled ? .on : .off
         loginStatusLabel.stringValue = "开机启动：\(LoginItemManager.statusText)"
         bibleInfoLabel.stringValue = "经文库：\(bibleStore.sourceSummary)"
-        versionInfoLabel.stringValue = "版本：\(AppInfo.versionDisplay)"
+        footerInfoLabel.stringValue = "作者：大侠请留步 · 版本：\(AppInfo.versionDisplay)"
     }
 
     private func setupContent() {
@@ -75,7 +78,7 @@ final class SettingsWindowController: NSWindowController {
         let root = NSStackView()
         root.orientation = .vertical
         root.alignment = .leading
-        root.spacing = 18
+        root.spacing = 12
         root.translatesAutoresizingMaskIntoConstraints = false
 
         let titleLabel = NSTextField(labelWithString: "经文替换")
@@ -84,10 +87,6 @@ final class SettingsWindowController: NSWindowController {
         let subtitleLabel = NSTextField(labelWithString: "设置全局快捷键、输出格式和系统权限。")
         subtitleLabel.textColor = .secondaryLabelColor
         subtitleLabel.font = .systemFont(ofSize: 13)
-
-        let authorLabel = NSTextField(labelWithString: "作者：大侠请留步")
-        authorLabel.textColor = .secondaryLabelColor
-        authorLabel.font = .systemFont(ofSize: 13)
 
         outputPopup.addItems(withTitles: OutputFormat.allCases.map(\.title))
         outputPopup.target = self
@@ -100,6 +99,10 @@ final class SettingsWindowController: NSWindowController {
         combinedPassagePopup.addItems(withTitles: CombinedPassageMode.allCases.map(\.title))
         combinedPassagePopup.target = self
         combinedPassagePopup.action = #selector(combinedPassageModeChanged)
+
+        quotationStylePopup.addItems(withTitles: QuotationStyle.allCases.map(\.title))
+        quotationStylePopup.target = self
+        quotationStylePopup.action = #selector(quotationStyleChanged)
 
         shortcutButton.onShortcutRecorded = { [weak self] shortcut in
             self?.preferences.shortcut = shortcut
@@ -120,14 +123,21 @@ final class SettingsWindowController: NSWindowController {
         let repositoryButton = NSButton(title: "打开 GitHub 仓库", target: self, action: #selector(openRepository))
         repositoryButton.bezelStyle = .rounded
 
+        footerInfoLabel.textColor = .secondaryLabelColor
+        footerInfoLabel.font = .systemFont(ofSize: 12)
+
+        repositoryInfoLabel.textColor = .secondaryLabelColor
+        repositoryInfoLabel.font = .monospacedSystemFont(ofSize: 11, weight: .regular)
+        repositoryInfoLabel.lineBreakMode = .byTruncatingMiddle
+
         root.addArrangedSubview(titleLabel)
         root.addArrangedSubview(subtitleLabel)
-        root.addArrangedSubview(authorLabel)
         root.addArrangedSubview(separator())
         root.addArrangedSubview(row(label: "快捷键", view: shortcutButton))
         root.addArrangedSubview(row(label: "输出格式", view: outputPopup))
         root.addArrangedSubview(row(label: "引用标签", view: referenceLabelPopup))
         root.addArrangedSubview(row(label: "组合显示", view: combinedPassagePopup))
+        root.addArrangedSubview(row(label: "引号样式", view: quotationStylePopup))
         root.addArrangedSubview(separator())
         root.addArrangedSubview(row(label: "权限", view: permissionStatusLabel))
         root.addArrangedSubview(permissionButton)
@@ -135,12 +145,11 @@ final class SettingsWindowController: NSWindowController {
         root.addArrangedSubview(row(label: "启动", view: loginItemCheckbox))
         root.addArrangedSubview(loginStatusLabel)
         root.addArrangedSubview(separator())
-        root.addArrangedSubview(versionInfoLabel)
-        root.addArrangedSubview(row(label: "仓库", view: repositoryLinkLabel()))
-        root.addArrangedSubview(repositoryButton)
-        root.addArrangedSubview(separator())
         root.addArrangedSubview(bibleInfoLabel)
         root.addArrangedSubview(sourceButton)
+        root.addArrangedSubview(separator())
+        root.addArrangedSubview(footerInfoLabel)
+        root.addArrangedSubview(repositoryFooter(repositoryButton: repositoryButton))
 
         window.contentView = NSView()
         window.contentView?.addSubview(root)
@@ -152,15 +161,9 @@ final class SettingsWindowController: NSWindowController {
             shortcutButton.widthAnchor.constraint(greaterThanOrEqualToConstant: 160),
             outputPopup.widthAnchor.constraint(greaterThanOrEqualToConstant: 220),
             referenceLabelPopup.widthAnchor.constraint(greaterThanOrEqualToConstant: 220),
-            combinedPassagePopup.widthAnchor.constraint(greaterThanOrEqualToConstant: 220)
+            combinedPassagePopup.widthAnchor.constraint(greaterThanOrEqualToConstant: 220),
+            quotationStylePopup.widthAnchor.constraint(greaterThanOrEqualToConstant: 220)
         ])
-    }
-
-    private func repositoryLinkLabel() -> NSTextField {
-        let label = NSTextField(labelWithString: AppInfo.repositoryURLString)
-        label.textColor = .secondaryLabelColor
-        label.font = .monospacedSystemFont(ofSize: 12, weight: .regular)
-        return label
     }
 
     private func row(label: String, view: NSView) -> NSView {
@@ -176,6 +179,17 @@ final class SettingsWindowController: NSWindowController {
 
         stack.addArrangedSubview(labelView)
         stack.addArrangedSubview(view)
+        return stack
+    }
+
+    private func repositoryFooter(repositoryButton: NSButton) -> NSView {
+        let stack = NSStackView()
+        stack.orientation = .horizontal
+        stack.alignment = .centerY
+        stack.spacing = 10
+        stack.addArrangedSubview(repositoryInfoLabel)
+        stack.addArrangedSubview(repositoryButton)
+        repositoryInfoLabel.widthAnchor.constraint(equalToConstant: 430).isActive = true
         return stack
     }
 
@@ -211,6 +225,14 @@ final class SettingsWindowController: NSWindowController {
         combinedPassagePopup.selectItem(at: index)
     }
 
+    private func selectCurrentQuotationStyle() {
+        let allCases = QuotationStyle.allCases
+        guard let index = allCases.firstIndex(of: preferences.quotationStyle) else {
+            return
+        }
+        quotationStylePopup.selectItem(at: index)
+    }
+
     @objc private func outputFormatChanged() {
         let index = outputPopup.indexOfSelectedItem
         guard OutputFormat.allCases.indices.contains(index) else {
@@ -233,6 +255,14 @@ final class SettingsWindowController: NSWindowController {
             return
         }
         preferences.combinedPassageMode = CombinedPassageMode.allCases[index]
+    }
+
+    @objc private func quotationStyleChanged() {
+        let index = quotationStylePopup.indexOfSelectedItem
+        guard QuotationStyle.allCases.indices.contains(index) else {
+            return
+        }
+        preferences.quotationStyle = QuotationStyle.allCases[index]
     }
 
     @objc private func openAccessibilitySettings() {

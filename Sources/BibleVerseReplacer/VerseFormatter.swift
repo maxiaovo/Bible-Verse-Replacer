@@ -51,6 +51,23 @@ enum CombinedPassageMode: String, CaseIterable {
     }
 }
 
+enum QuotationStyle: String, CaseIterable {
+    case fullWidth
+    case halfWidth
+    case square
+
+    var title: String {
+        switch self {
+        case .fullWidth:
+            return "全角引号 “ ”"
+        case .halfWidth:
+            return "半角引号 \" \""
+        case .square:
+            return "保留方引号 「 」"
+        }
+    }
+}
+
 final class VerseFormatter {
     func format(
         parsedReference: ParsedReference,
@@ -59,12 +76,13 @@ final class VerseFormatter {
         format: OutputFormat,
         labelMode: ReferenceLabelMode = .normalizedFull,
         originalReference: String? = nil,
-        combinedPassageMode: CombinedPassageMode = .compactEllipsis
+        combinedPassageMode: CombinedPassageMode = .compactEllipsis,
+        quotationStyle: QuotationStyle = .fullWidth
     ) -> String {
         switch format {
         case .referenceVerseLines:
             return verses.map { verse in
-                "\(BibleBookCatalog.chineseName(for: verse.book)) \(verse.referenceVerseText) \(cleanText(verse.text))"
+                "\(BibleBookCatalog.chineseName(for: verse.book)) \(verse.referenceVerseText) \(cleanText(verse.text, quotationStyle: quotationStyle))"
             }.joined(separator: "\n")
 
         case .continuousText:
@@ -74,16 +92,17 @@ final class VerseFormatter {
                 verseGroups: verseGroups,
                 labelMode: labelMode,
                 originalReference: originalReference,
-                combinedPassageMode: combinedPassageMode
+                combinedPassageMode: combinedPassageMode,
+                quotationStyle: quotationStyle
             )
 
         case .referenceHeader:
-            let body = verses.map { cleanText($0.text) }.joined(separator: "\n")
+            let body = verses.map { cleanText($0.text, quotationStyle: quotationStyle) }.joined(separator: "\n")
             return "\(parsedReference.displayText)\n\(body)"
 
         case .numberedVerses:
             let body = verses.map { verse in
-                "\(verse.verseLabel) \(cleanText(verse.text))"
+                "\(verse.verseLabel) \(cleanText(verse.text, quotationStyle: quotationStyle))"
             }.joined(separator: "\n")
             return applyLabelIfNeeded(label: labelText(parsedReference: parsedReference, labelMode: labelMode, originalReference: originalReference), body: body, separator: "\n")
         }
@@ -94,14 +113,16 @@ final class VerseFormatter {
         verses: [BibleVerse],
         format: OutputFormat,
         labelMode: ReferenceLabelMode = .normalizedFull,
-        originalReference: String? = nil
+        originalReference: String? = nil,
+        quotationStyle: QuotationStyle = .fullWidth
     ) -> String {
         self.format(
             parsedReference: ParsedReference(passages: [PassageReference(reference: reference)]),
             verses: verses,
             format: format,
             labelMode: labelMode,
-            originalReference: originalReference
+            originalReference: originalReference,
+            quotationStyle: quotationStyle
         )
     }
 
@@ -111,10 +132,11 @@ final class VerseFormatter {
         verseGroups: [PassageVerseGroup]?,
         labelMode: ReferenceLabelMode,
         originalReference: String?,
-        combinedPassageMode: CombinedPassageMode
+        combinedPassageMode: CombinedPassageMode,
+        quotationStyle: QuotationStyle
     ) -> String {
         guard let verseGroups, !verseGroups.isEmpty else {
-            let body = verses.map { cleanText($0.text) }.joined()
+            let body = verses.map { cleanText($0.text, quotationStyle: quotationStyle) }.joined()
             return applyLabelIfNeeded(
                 label: labelText(parsedReference: parsedReference, labelMode: labelMode, originalReference: originalReference),
                 body: body,
@@ -125,7 +147,7 @@ final class VerseFormatter {
         switch combinedPassageMode {
         case .compactEllipsis:
             let body = verseGroups
-                .map { group in group.verses.map { cleanText($0.text) }.joined() }
+                .map { group in group.verses.map { cleanText($0.text, quotationStyle: quotationStyle) }.joined() }
                 .joined(separator: "……")
             return applyLabelIfNeeded(
                 label: labelText(
@@ -140,7 +162,7 @@ final class VerseFormatter {
 
         case .groupedLines:
             return verseGroups.map { group in
-                let body = group.verses.map { cleanText($0.text) }.joined()
+                let body = group.verses.map { cleanText($0.text, quotationStyle: quotationStyle) }.joined()
                 return applyLabelIfNeeded(
                     label: groupLabelText(
                         group: group,
@@ -155,10 +177,25 @@ final class VerseFormatter {
         }
     }
 
-    private func cleanText(_ raw: String) -> String {
-        raw
+    func cleanText(_ raw: String, quotationStyle: QuotationStyle = .fullWidth) -> String {
+        applyQuotationStyle(raw, quotationStyle: quotationStyle)
             .replacingOccurrences(of: "\u{3000}", with: "")
             .trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private func applyQuotationStyle(_ raw: String, quotationStyle: QuotationStyle) -> String {
+        switch quotationStyle {
+        case .fullWidth:
+            return raw
+                .replacingOccurrences(of: "「", with: "“")
+                .replacingOccurrences(of: "」", with: "”")
+        case .halfWidth:
+            return raw
+                .replacingOccurrences(of: "「", with: "\"")
+                .replacingOccurrences(of: "」", with: "\"")
+        case .square:
+            return raw
+        }
     }
 
     private func applyLabelIfNeeded(label: String?, body: String, separator: String) -> String {
