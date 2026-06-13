@@ -12,10 +12,29 @@ namespace BibleVerseReplacer.Windows
             ReferenceLabelMode labelMode,
             string originalReference)
         {
+            return Format(
+                parsedReference,
+                verses,
+                null,
+                format,
+                labelMode,
+                originalReference,
+                CombinedPassageMode.CompactEllipsis);
+        }
+
+        public string Format(
+            ParsedReference parsedReference,
+            IList<BibleVerse> verses,
+            IList<PassageVerseGroup> verseGroups,
+            OutputFormat format,
+            ReferenceLabelMode labelMode,
+            string originalReference,
+            CombinedPassageMode combinedPassageMode)
+        {
             switch (format)
             {
                 case OutputFormat.ContinuousText:
-                    return ApplyLabelIfNeeded(parsedReference, JoinContinuous(verses), labelMode, originalReference, " ");
+                    return FormatContinuous(parsedReference, verses, verseGroups, labelMode, originalReference, combinedPassageMode);
                 case OutputFormat.ReferenceHeader:
                     return parsedReference.DisplayText + "\r\n" + JoinLines(verses, false, null);
                 case OutputFormat.NumberedVerses:
@@ -38,6 +57,30 @@ namespace BibleVerseReplacer.Windows
                 format,
                 labelMode,
                 originalReference);
+        }
+
+        private static string FormatContinuous(
+            ParsedReference parsedReference,
+            IList<BibleVerse> verses,
+            IList<PassageVerseGroup> verseGroups,
+            ReferenceLabelMode labelMode,
+            string originalReference,
+            CombinedPassageMode combinedPassageMode)
+        {
+            if (verseGroups == null || verseGroups.Count == 0)
+            {
+                return ApplyLabelIfNeeded(parsedReference, JoinContinuous(verses), labelMode, originalReference, " ");
+            }
+
+            if (combinedPassageMode == CombinedPassageMode.GroupedLines)
+            {
+                return JoinGroupedContinuous(verseGroups, labelMode, originalReference);
+            }
+
+            return ApplyLabelTextIfNeeded(
+                LabelText(parsedReference, labelMode, originalReference, parsedReference.CompactDisplayText),
+                JoinGroupBodies(verseGroups, "……"),
+                " ");
         }
 
         private static string JoinLines(IList<BibleVerse> verses, bool includeBook, VerseReference reference)
@@ -89,6 +132,42 @@ namespace BibleVerseReplacer.Windows
             return builder.ToString();
         }
 
+        private static string JoinGroupBodies(IList<PassageVerseGroup> verseGroups, string separator)
+        {
+            StringBuilder builder = new StringBuilder();
+            for (int index = 0; index < verseGroups.Count; index++)
+            {
+                if (index > 0)
+                {
+                    builder.Append(separator);
+                }
+                builder.Append(JoinContinuous(verseGroups[index].Verses));
+            }
+            return builder.ToString();
+        }
+
+        private static string JoinGroupedContinuous(
+            IList<PassageVerseGroup> verseGroups,
+            ReferenceLabelMode labelMode,
+            string originalReference)
+        {
+            StringBuilder builder = new StringBuilder();
+            for (int index = 0; index < verseGroups.Count; index++)
+            {
+                if (index > 0)
+                {
+                    builder.Append("\r\n");
+                }
+
+                PassageVerseGroup group = verseGroups[index];
+                builder.Append(ApplyLabelTextIfNeeded(
+                    GroupLabelText(group, verseGroups.Count, labelMode, originalReference),
+                    JoinContinuous(group.Verses),
+                    " "));
+            }
+            return builder.ToString();
+        }
+
         private static string CleanText(string text)
         {
             return (text ?? string.Empty).Replace("\u3000", string.Empty).Trim();
@@ -102,6 +181,11 @@ namespace BibleVerseReplacer.Windows
             string separator)
         {
             string label = LabelText(parsedReference, labelMode, originalReference);
+            return ApplyLabelTextIfNeeded(label, body, separator);
+        }
+
+        private static string ApplyLabelTextIfNeeded(string label, string body, string separator)
+        {
             if (string.IsNullOrEmpty(label))
             {
                 return body;
@@ -111,6 +195,11 @@ namespace BibleVerseReplacer.Windows
 
         private static string LabelText(ParsedReference parsedReference, ReferenceLabelMode labelMode, string originalReference)
         {
+            return LabelText(parsedReference, labelMode, originalReference, parsedReference.DisplayText);
+        }
+
+        private static string LabelText(ParsedReference parsedReference, ReferenceLabelMode labelMode, string originalReference, string normalizedLabel)
+        {
             switch (labelMode)
             {
                 case ReferenceLabelMode.PreserveInput:
@@ -118,7 +207,24 @@ namespace BibleVerseReplacer.Windows
                 case ReferenceLabelMode.Omit:
                     return null;
                 default:
-                    return parsedReference.DisplayText;
+                    return normalizedLabel;
+            }
+        }
+
+        private static string GroupLabelText(
+            PassageVerseGroup group,
+            int groupCount,
+            ReferenceLabelMode labelMode,
+            string originalReference)
+        {
+            switch (labelMode)
+            {
+                case ReferenceLabelMode.PreserveInput:
+                    return groupCount == 1 ? CleanOriginalReference(originalReference) : group.Passage.DisplayText;
+                case ReferenceLabelMode.Omit:
+                    return null;
+                default:
+                    return group.Passage.DisplayText;
             }
         }
 

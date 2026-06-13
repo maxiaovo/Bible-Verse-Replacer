@@ -80,6 +80,32 @@ namespace BibleVerseReplacer.Windows
             return result;
         }
 
+        public List<PassageVerseGroup> VerseGroupsFor(ParsedReference parsedReference)
+        {
+            List<PassageVerseGroup> result = new List<PassageVerseGroup>();
+            HashSet<string> seen = new HashSet<string>();
+
+            foreach (PassageReference passage in parsedReference.Passages)
+            {
+                List<BibleVerse> verses = new List<BibleVerse>();
+                foreach (BibleVerse verse in VersesFor(passage))
+                {
+                    if (!seen.Contains(verse.CanonicalKey))
+                    {
+                        verses.Add(verse);
+                        seen.Add(verse.CanonicalKey);
+                    }
+                }
+
+                if (verses.Count > 0)
+                {
+                    result.Add(new PassageVerseGroup(passage, verses));
+                }
+            }
+
+            return result;
+        }
+
         public List<BibleVerse> VersesFor(PassageReference passage)
         {
             if (passage.IsWholeChapter)

@@ -9,6 +9,7 @@ final class SettingsWindowController: NSWindowController {
     private let shortcutButton: ShortcutRecorderButton
     private let outputPopup = NSPopUpButton(frame: .zero, pullsDown: false)
     private let referenceLabelPopup = NSPopUpButton(frame: .zero, pullsDown: false)
+    private let combinedPassagePopup = NSPopUpButton(frame: .zero, pullsDown: false)
     private let permissionStatusLabel = NSTextField(labelWithString: "")
     private let loginItemCheckbox = NSButton(checkboxWithTitle: "开机自启动", target: nil, action: nil)
     private let loginStatusLabel = NSTextField(labelWithString: "")
@@ -25,7 +26,7 @@ final class SettingsWindowController: NSWindowController {
         self.shortcutButton = ShortcutRecorderButton(shortcut: preferences.shortcut)
 
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 540, height: 410),
+            contentRect: NSRect(x: 0, y: 0, width: 540, height: 445),
             styleMask: [.titled, .closable, .miniaturizable],
             backing: .buffered,
             defer: false
@@ -55,6 +56,7 @@ final class SettingsWindowController: NSWindowController {
         shortcutButton.update(shortcut: preferences.shortcut)
         selectCurrentOutputFormat()
         selectCurrentReferenceLabelMode()
+        selectCurrentCombinedPassageMode()
         permissionStatusLabel.stringValue = PermissionManager.isAccessibilityTrusted ? "辅助功能权限：已允许" : "辅助功能权限：未允许"
         loginItemCheckbox.state = LoginItemManager.isEnabled ? .on : .off
         loginStatusLabel.stringValue = "开机启动：\(LoginItemManager.statusText)"
@@ -87,6 +89,10 @@ final class SettingsWindowController: NSWindowController {
         referenceLabelPopup.target = self
         referenceLabelPopup.action = #selector(referenceLabelModeChanged)
 
+        combinedPassagePopup.addItems(withTitles: CombinedPassageMode.allCases.map(\.title))
+        combinedPassagePopup.target = self
+        combinedPassagePopup.action = #selector(combinedPassageModeChanged)
+
         shortcutButton.onShortcutRecorded = { [weak self] shortcut in
             self?.preferences.shortcut = shortcut
         }
@@ -106,6 +112,7 @@ final class SettingsWindowController: NSWindowController {
         root.addArrangedSubview(row(label: "快捷键", view: shortcutButton))
         root.addArrangedSubview(row(label: "输出格式", view: outputPopup))
         root.addArrangedSubview(row(label: "引用标签", view: referenceLabelPopup))
+        root.addArrangedSubview(row(label: "组合显示", view: combinedPassagePopup))
         root.addArrangedSubview(separator())
         root.addArrangedSubview(row(label: "权限", view: permissionStatusLabel))
         root.addArrangedSubview(permissionButton)
@@ -124,7 +131,8 @@ final class SettingsWindowController: NSWindowController {
             root.topAnchor.constraint(equalTo: window.contentView!.topAnchor, constant: 24),
             shortcutButton.widthAnchor.constraint(greaterThanOrEqualToConstant: 160),
             outputPopup.widthAnchor.constraint(greaterThanOrEqualToConstant: 220),
-            referenceLabelPopup.widthAnchor.constraint(greaterThanOrEqualToConstant: 220)
+            referenceLabelPopup.widthAnchor.constraint(greaterThanOrEqualToConstant: 220),
+            combinedPassagePopup.widthAnchor.constraint(greaterThanOrEqualToConstant: 220)
         ])
     }
 
@@ -168,6 +176,14 @@ final class SettingsWindowController: NSWindowController {
         referenceLabelPopup.selectItem(at: index)
     }
 
+    private func selectCurrentCombinedPassageMode() {
+        let allCases = CombinedPassageMode.allCases
+        guard let index = allCases.firstIndex(of: preferences.combinedPassageMode) else {
+            return
+        }
+        combinedPassagePopup.selectItem(at: index)
+    }
+
     @objc private func outputFormatChanged() {
         let index = outputPopup.indexOfSelectedItem
         guard OutputFormat.allCases.indices.contains(index) else {
@@ -182,6 +198,14 @@ final class SettingsWindowController: NSWindowController {
             return
         }
         preferences.referenceLabelMode = ReferenceLabelMode.allCases[index]
+    }
+
+    @objc private func combinedPassageModeChanged() {
+        let index = combinedPassagePopup.indexOfSelectedItem
+        guard CombinedPassageMode.allCases.indices.contains(index) else {
+            return
+        }
+        preferences.combinedPassageMode = CombinedPassageMode.allCases[index]
     }
 
     @objc private func openAccessibilitySettings() {

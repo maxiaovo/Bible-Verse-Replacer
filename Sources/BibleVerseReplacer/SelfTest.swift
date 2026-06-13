@@ -45,6 +45,25 @@ enum SelfTest {
             )
 
             try assertFormatted(
+                raw: "创1:1-3，7",
+                expected: "创世记 1:1-3,7 起初，神创造天地。地是空虚混沌，渊面黑暗；神的灵运行在水面上。神说：「要有光」，就有了光。……神就造出空气，将空气以下的水、空气以上的水分开了。事就这样成了。",
+                parser: parser,
+                formatter: formatter,
+                format: .continuousText,
+                labelMode: .normalizedFull
+            )
+
+            try assertFormatted(
+                raw: "创1:1-3，7",
+                expected: "创世记 1:1-3 起初，神创造天地。地是空虚混沌，渊面黑暗；神的灵运行在水面上。神说：「要有光」，就有了光。\n创世记 1:7 神就造出空气，将空气以下的水、空气以上的水分开了。事就这样成了。",
+                parser: parser,
+                formatter: formatter,
+                format: .continuousText,
+                labelMode: .normalizedFull,
+                combinedPassageMode: .groupedLines
+            )
+
+            try assertFormatted(
                 raw: "创3：2－5",
                 expectedPrefix: "创世记 3:2 女人对蛇说",
                 parser: parser,
@@ -201,9 +220,10 @@ enum SelfTest {
         parser: ReferenceParser,
         formatter: VerseFormatter,
         format: OutputFormat,
-        labelMode: ReferenceLabelMode
+        labelMode: ReferenceLabelMode,
+        combinedPassageMode: CombinedPassageMode = .compactEllipsis
     ) throws {
-        let actual = try formatted(raw: raw, parser: parser, formatter: formatter, format: format, labelMode: labelMode)
+        let actual = try formatted(raw: raw, parser: parser, formatter: formatter, format: format, labelMode: labelMode, combinedPassageMode: combinedPassageMode)
         if actual != expected {
             throw TestFailure("For \(raw), expected \(expected), got \(actual)")
         }
@@ -239,11 +259,21 @@ enum SelfTest {
         parser: ReferenceParser,
         formatter: VerseFormatter,
         format: OutputFormat,
-        labelMode: ReferenceLabelMode
+        labelMode: ReferenceLabelMode,
+        combinedPassageMode: CombinedPassageMode = .compactEllipsis
     ) throws -> String {
         let reference = try parser.parseSelection(raw)
+        let verseGroups = try BibleStore.shared.verseGroups(for: reference)
         let verses = try BibleStore.shared.verses(for: reference)
-        return formatter.format(parsedReference: reference, verses: verses, format: format, labelMode: labelMode, originalReference: raw)
+        return formatter.format(
+            parsedReference: reference,
+            verses: verses,
+            verseGroups: verseGroups,
+            format: format,
+            labelMode: labelMode,
+            originalReference: raw,
+            combinedPassageMode: combinedPassageMode
+        )
     }
 }
 

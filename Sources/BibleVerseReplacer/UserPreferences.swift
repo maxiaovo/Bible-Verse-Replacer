@@ -9,6 +9,7 @@ final class UserPreferences {
     private enum Keys {
         static let outputFormat = "outputFormat"
         static let referenceLabelMode = "referenceLabelMode"
+        static let combinedPassageMode = "combinedPassageMode"
         static let shortcut = "shortcut"
     }
 
@@ -36,6 +37,20 @@ final class UserPreferences {
         }
         set {
             defaults.set(newValue.rawValue, forKey: Keys.referenceLabelMode)
+            notifyChanged()
+        }
+    }
+
+    var combinedPassageMode: CombinedPassageMode {
+        get {
+            guard let raw = defaults.string(forKey: Keys.combinedPassageMode),
+                  let value = CombinedPassageMode(rawValue: raw) else {
+                return .compactEllipsis
+            }
+            return value
+        }
+        set {
+            defaults.set(newValue.rawValue, forKey: Keys.combinedPassageMode)
             notifyChanged()
         }
     }

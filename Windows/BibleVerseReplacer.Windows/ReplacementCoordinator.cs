@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Windows.Forms;
 
 namespace BibleVerseReplacer.Windows
@@ -30,12 +31,15 @@ namespace BibleVerseReplacer.Windows
                 }
 
                 ParsedReference reference = parser.ParseSelection(selectedText);
+                List<PassageVerseGroup> verseGroups = BibleStore.Instance.VerseGroupsFor(reference);
                 string replacement = formatter.Format(
                     reference,
                     BibleStore.Instance.VersesFor(reference),
+                    verseGroups,
                     UserPreferences.Instance.OutputFormat,
                     UserPreferences.Instance.ReferenceLabelMode,
-                    selectedText);
+                    selectedText,
+                    UserPreferences.Instance.CombinedPassageMode);
 
                 clipboard.Paste(replacement);
                 Timer restoreTimer = new Timer();

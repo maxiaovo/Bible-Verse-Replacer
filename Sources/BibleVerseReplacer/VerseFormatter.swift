@@ -37,13 +37,29 @@ enum ReferenceLabelMode: String, CaseIterable {
     }
 }
 
+enum CombinedPassageMode: String, CaseIterable {
+    case compactEllipsis
+    case groupedLines
+
+    var title: String {
+        switch self {
+        case .compactEllipsis:
+            return "合并为一段（省略号连接）"
+        case .groupedLines:
+            return "按片段分行"
+        }
+    }
+}
+
 final class VerseFormatter {
     func format(
         parsedReference: ParsedReference,
         verses: [BibleVerse],
+        verseGroups: [PassageVerseGroup]? = nil,
         format: OutputFormat,
         labelMode: ReferenceLabelMode = .normalizedFull,
-        originalReference: String? = nil
+        originalReference: String? = nil,
+        combinedPassageMode: CombinedPassageMode = .compactEllipsis
     ) -> String {
         switch format {
         case .referenceVerseLines:
@@ -52,8 +68,14 @@ final class VerseFormatter {
             }.joined(separator: "\n")
 
         case .continuousText:
-            let body = verses.map { cleanText($0.text) }.joined()
-            return applyLabelIfNeeded(label: labelText(parsedReference: parsedReference, labelMode: labelMode, originalReference: originalReference), body: body, separator: " ")
+            return continuousText(
+                parsedReference: parsedReference,
+                verses: verses,
+                verseGroups: verseGroups,
+                labelMode: labelMode,
+                originalReference: originalReference,
+                combinedPassageMode: combinedPassageMode
+            )
 
         case .referenceHeader:
             let body = verses.map { cleanText($0.text) }.joined(separator: "\n")
@@ -83,6 +105,56 @@ final class VerseFormatter {
         )
     }
 
+    private func continuousText(
+        parsedReference: ParsedReference,
+        verses: [BibleVerse],
+        verseGroups: [PassageVerseGroup]?,
+        labelMode: ReferenceLabelMode,
+        originalReference: String?,
+        combinedPassageMode: CombinedPassageMode
+    ) -> String {
+        guard let verseGroups, !verseGroups.isEmpty else {
+            let body = verses.map { cleanText($0.text) }.joined()
+            return applyLabelIfNeeded(
+                label: labelText(parsedReference: parsedReference, labelMode: labelMode, originalReference: originalReference),
+                body: body,
+                separator: " "
+            )
+        }
+
+        switch combinedPassageMode {
+        case .compactEllipsis:
+            let body = verseGroups
+                .map { group in group.verses.map { cleanText($0.text) }.joined() }
+                .joined(separator: "……")
+            return applyLabelIfNeeded(
+                label: labelText(
+                    parsedReference: parsedReference,
+                    labelMode: labelMode,
+                    originalReference: originalReference,
+                    normalizedLabel: parsedReference.compactDisplayText
+                ),
+                body: body,
+                separator: " "
+            )
+
+        case .groupedLines:
+            return verseGroups.map { group in
+                let body = group.verses.map { cleanText($0.text) }.joined()
+                return applyLabelIfNeeded(
+                    label: groupLabelText(
+                        group: group,
+                        groupCount: verseGroups.count,
+                        labelMode: labelMode,
+                        originalReference: originalReference
+                    ),
+                    body: body,
+                    separator: " "
+                )
+            }.joined(separator: "\n")
+        }
+    }
+
     private func cleanText(_ raw: String) -> String {
         raw
             .replacingOccurrences(of: "\u{3000}", with: "")
@@ -96,12 +168,36 @@ final class VerseFormatter {
         return "\(label)\(separator)\(body)"
     }
 
-    private func labelText(parsedReference: ParsedReference, labelMode: ReferenceLabelMode, originalReference: String?) -> String? {
+    private func labelText(
+        parsedReference: ParsedReference,
+        labelMode: ReferenceLabelMode,
+        originalReference: String?,
+        normalizedLabel: String? = nil
+    ) -> String? {
         switch labelMode {
         case .normalizedFull:
-            return parsedReference.displayText
+            return normalizedLabel ?? parsedReference.displayText
         case .preserveInput:
             return cleanOriginalReference(originalReference)
+        case .omit:
+            return nil
+        }
+    }
+
+    private func groupLabelText(
+        group: PassageVerseGroup,
+        groupCount: Int,
+        labelMode: ReferenceLabelMode,
+        originalReference: String?
+    ) -> String? {
+        switch labelMode {
+        case .normalizedFull:
+            return group.passage.displayText
+        case .preserveInput:
+            if groupCount == 1 {
+                return cleanOriginalReference(originalReference)
+            }
+            return group.passage.displayText
         case .omit:
             return nil
         }

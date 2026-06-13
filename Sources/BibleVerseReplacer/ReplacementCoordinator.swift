@@ -35,13 +35,16 @@ final class ReplacementCoordinator {
 
         do {
             let reference = try parser.parseSelection(selectedText)
+            let verseGroups = try bibleStore.verseGroups(for: reference)
             let verses = try bibleStore.verses(for: reference)
             let replacement = formatter.format(
                 parsedReference: reference,
                 verses: verses,
+                verseGroups: verseGroups,
                 format: preferences.outputFormat,
                 labelMode: preferences.referenceLabelMode,
-                originalReference: selectedText
+                originalReference: selectedText,
+                combinedPassageMode: preferences.combinedPassageMode
             )
             clipboard.paste(replacement)
 

@@ -98,6 +98,29 @@ struct PassageReference: Equatable {
 
         return "\(book.chineseName) \(startChapter):\(startVerse)-\(endChapter):\(endVerse)"
     }
+
+    var sameChapterVerseFragment: String? {
+        guard startChapter == endChapter, let startVerse, let endVerse else {
+            return nil
+        }
+        if startVerse == endVerse {
+            return "\(startVerse)"
+        }
+        return "\(startVerse)-\(endVerse)"
+    }
+
+    var chapterVerseFragment: String? {
+        guard let startVerse, let endVerse else {
+            return nil
+        }
+        if startChapter == endChapter {
+            if startVerse == endVerse {
+                return "\(startChapter):\(startVerse)"
+            }
+            return "\(startChapter):\(startVerse)-\(endVerse)"
+        }
+        return "\(startChapter):\(startVerse)-\(endChapter):\(endVerse)"
+    }
 }
 
 struct ParsedReference: Equatable {
@@ -106,6 +129,35 @@ struct ParsedReference: Equatable {
     var displayText: String {
         passages.map(\.displayText).joined(separator: "；")
     }
+
+    var compactDisplayText: String {
+        guard let first = passages.first else {
+            return ""
+        }
+
+        guard passages.allSatisfy({ passage in
+            passage.book.code == first.book.code && passage.startVerse != nil && passage.endVerse != nil
+        }) else {
+            return displayText
+        }
+
+        if passages.allSatisfy({ $0.startChapter == first.startChapter && $0.endChapter == first.startChapter }),
+           passages.allSatisfy({ $0.sameChapterVerseFragment != nil }) {
+            let fragments = passages.compactMap(\.sameChapterVerseFragment).joined(separator: ",")
+            return "\(first.book.chineseName) \(first.startChapter):\(fragments)"
+        }
+
+        let fragments = passages.compactMap(\.chapterVerseFragment)
+        guard fragments.count == passages.count else {
+            return displayText
+        }
+        return "\(first.book.chineseName) \(fragments.joined(separator: ","))"
+    }
+}
+
+struct PassageVerseGroup {
+    let passage: PassageReference
+    let verses: [BibleVerse]
 }
 
 struct VerseKey: Hashable {

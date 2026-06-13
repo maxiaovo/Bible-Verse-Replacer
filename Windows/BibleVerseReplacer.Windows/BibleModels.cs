@@ -157,6 +157,40 @@ namespace BibleVerseReplacer.Windows
                 return Book.ChineseName + " " + StartChapter + ":" + StartVerse.Value + "-" + EndChapter + ":" + EndVerse.Value;
             }
         }
+
+        public string SameChapterVerseFragment
+        {
+            get
+            {
+                if (StartChapter != EndChapter || !StartVerse.HasValue || !EndVerse.HasValue)
+                {
+                    return null;
+                }
+                return StartVerse.Value == EndVerse.Value
+                    ? StartVerse.Value.ToString()
+                    : StartVerse.Value + "-" + EndVerse.Value;
+            }
+        }
+
+        public string ChapterVerseFragment
+        {
+            get
+            {
+                if (!StartVerse.HasValue || !EndVerse.HasValue)
+                {
+                    return null;
+                }
+
+                if (StartChapter == EndChapter)
+                {
+                    return StartVerse.Value == EndVerse.Value
+                        ? StartChapter + ":" + StartVerse.Value
+                        : StartChapter + ":" + StartVerse.Value + "-" + EndVerse.Value;
+                }
+
+                return StartChapter + ":" + StartVerse.Value + "-" + EndChapter + ":" + EndVerse.Value;
+            }
+        }
     }
 
     internal sealed class ParsedReference
@@ -180,6 +214,69 @@ namespace BibleVerseReplacer.Windows
                 return string.Join("；", labels.ToArray());
             }
         }
+
+        public string CompactDisplayText
+        {
+            get
+            {
+                if (Passages.Count == 0)
+                {
+                    return string.Empty;
+                }
+
+                PassageReference first = Passages[0];
+                foreach (PassageReference passage in Passages)
+                {
+                    if (passage.Book.Code != first.Book.Code || !passage.StartVerse.HasValue || !passage.EndVerse.HasValue)
+                    {
+                        return DisplayText;
+                    }
+                }
+
+                bool sameChapter = true;
+                foreach (PassageReference passage in Passages)
+                {
+                    if (passage.StartChapter != first.StartChapter || passage.EndChapter != first.StartChapter || passage.SameChapterVerseFragment == null)
+                    {
+                        sameChapter = false;
+                        break;
+                    }
+                }
+
+                List<string> fragments = new List<string>();
+                if (sameChapter)
+                {
+                    foreach (PassageReference passage in Passages)
+                    {
+                        fragments.Add(passage.SameChapterVerseFragment);
+                    }
+                    return first.Book.ChineseName + " " + first.StartChapter + ":" + string.Join(",", fragments.ToArray());
+                }
+
+                foreach (PassageReference passage in Passages)
+                {
+                    string fragment = passage.ChapterVerseFragment;
+                    if (fragment == null)
+                    {
+                        return DisplayText;
+                    }
+                    fragments.Add(fragment);
+                }
+                return first.Book.ChineseName + " " + string.Join(",", fragments.ToArray());
+            }
+        }
+    }
+
+    internal sealed class PassageVerseGroup
+    {
+        public PassageVerseGroup(PassageReference passage, List<BibleVerse> verses)
+        {
+            Passage = passage;
+            Verses = verses;
+        }
+
+        public PassageReference Passage { get; private set; }
+        public List<BibleVerse> Verses { get; private set; }
     }
 
     internal sealed class VerseKey

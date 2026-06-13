@@ -16,6 +16,8 @@ namespace BibleVerseReplacer.Windows
                 AssertFormatted(parser, formatter, "创 1:1", OutputFormat.ContinuousText, ReferenceLabelMode.NormalizedFull, "创世记 1:1 起初，神创造天地。", false);
                 AssertFormatted(parser, formatter, "创 1:1", OutputFormat.ContinuousText, ReferenceLabelMode.PreserveInput, "创 1:1 起初，神创造天地。", false);
                 AssertFormatted(parser, formatter, "创 1:1", OutputFormat.ContinuousText, ReferenceLabelMode.Omit, "起初，神创造天地。", false);
+                AssertFormatted(parser, formatter, "创1:1-3，7", OutputFormat.ContinuousText, ReferenceLabelMode.NormalizedFull, CombinedPassageMode.CompactEllipsis, "创世记 1:1-3,7 起初，神创造天地。地是空虚混沌，渊面黑暗；神的灵运行在水面上。神说：「要有光」，就有了光。……神就造出空气，将空气以下的水、空气以上的水分开了。事就这样成了。", false);
+                AssertFormatted(parser, formatter, "创1:1-3，7", OutputFormat.ContinuousText, ReferenceLabelMode.NormalizedFull, CombinedPassageMode.GroupedLines, "创世记 1:1-3 起初，神创造天地。地是空虚混沌，渊面黑暗；神的灵运行在水面上。神说：「要有光」，就有了光。\r\n创世记 1:7 神就造出空气，将空气以下的水、空气以上的水分开了。事就这样成了。", false);
                 AssertFormatted(parser, formatter, "创3：2－5", OutputFormat.ReferenceVerseLines, ReferenceLabelMode.NormalizedFull, "创世记 3:2 女人对蛇说", true);
                 AssertFormatted(parser, formatter, "\"Genesis 4:1\"", OutputFormat.ReferenceVerseLines, ReferenceLabelMode.NormalizedFull, "创世记 4:1 有一日，那人和他妻子夏娃同房", true);
                 AssertFormatted(parser, formatter, "创世记 24:29-30", OutputFormat.ReferenceVerseLines, ReferenceLabelMode.NormalizedFull, "创世记 24:29-30 利百加有一个哥哥", true);
@@ -70,7 +72,7 @@ namespace BibleVerseReplacer.Windows
         private static void AssertContains(ReferenceParser parser, VerseFormatter formatter, string raw, params string[] expectedFragments)
         {
             ParsedReference reference = parser.ParseSelection(raw);
-            string actual = formatter.Format(reference, BibleStore.Instance.VersesFor(reference), OutputFormat.ReferenceVerseLines, ReferenceLabelMode.NormalizedFull, raw);
+            string actual = formatter.Format(reference, BibleStore.Instance.VersesFor(reference), BibleStore.Instance.VerseGroupsFor(reference), OutputFormat.ReferenceVerseLines, ReferenceLabelMode.NormalizedFull, raw, CombinedPassageMode.CompactEllipsis);
             foreach (string expected in expectedFragments)
             {
                 if (!actual.Contains(expected))
@@ -89,8 +91,21 @@ namespace BibleVerseReplacer.Windows
             string expected,
             bool prefixOnly)
         {
+            AssertFormatted(parser, formatter, raw, outputFormat, labelMode, CombinedPassageMode.CompactEllipsis, expected, prefixOnly);
+        }
+
+        private static void AssertFormatted(
+            ReferenceParser parser,
+            VerseFormatter formatter,
+            string raw,
+            OutputFormat outputFormat,
+            ReferenceLabelMode labelMode,
+            CombinedPassageMode combinedPassageMode,
+            string expected,
+            bool prefixOnly)
+        {
             ParsedReference reference = parser.ParseSelection(raw);
-            string actual = formatter.Format(reference, BibleStore.Instance.VersesFor(reference), outputFormat, labelMode, raw);
+            string actual = formatter.Format(reference, BibleStore.Instance.VersesFor(reference), BibleStore.Instance.VerseGroupsFor(reference), outputFormat, labelMode, raw, combinedPassageMode);
             bool ok = prefixOnly ? actual.StartsWith(expected, StringComparison.Ordinal) : actual == expected;
             if (!ok)
             {

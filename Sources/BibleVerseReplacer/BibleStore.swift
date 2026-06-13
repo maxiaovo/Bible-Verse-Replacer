@@ -70,6 +70,26 @@ final class BibleStore {
         }
     }
 
+    func verseGroups(for parsedReference: ParsedReference) throws -> [PassageVerseGroup] {
+        var result: [PassageVerseGroup] = []
+        var seen: Set<String> = []
+
+        for passage in parsedReference.passages {
+            let verses = try verses(for: passage).filter { verse in
+                guard !seen.contains(verse.canonicalKey) else {
+                    return false
+                }
+                seen.insert(verse.canonicalKey)
+                return true
+            }
+            if !verses.isEmpty {
+                result.append(PassageVerseGroup(passage: passage, verses: verses))
+            }
+        }
+
+        return result
+    }
+
     func verses(for passage: PassageReference) throws -> [BibleVerse] {
         if passage.isWholeChapter {
             return try versesForWholeChapter(book: passage.book, chapter: passage.startChapter)

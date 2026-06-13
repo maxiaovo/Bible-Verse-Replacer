@@ -17,6 +17,12 @@ namespace BibleVerseReplacer.Windows
         Omit = 2
     }
 
+    internal enum CombinedPassageMode
+    {
+        CompactEllipsis = 0,
+        GroupedLines = 1
+    }
+
     internal sealed class UserPreferences
     {
         public static readonly UserPreferences Instance = new UserPreferences();
@@ -25,6 +31,7 @@ namespace BibleVerseReplacer.Windows
         private const string ShortcutName = "Shortcut";
         private const string OutputFormatName = "OutputFormat";
         private const string ReferenceLabelModeName = "ReferenceLabelMode";
+        private const string CombinedPassageModeName = "CombinedPassageMode";
 
         private UserPreferences()
         {
@@ -92,6 +99,32 @@ namespace BibleVerseReplacer.Windows
                 using (RegistryKey key = Registry.CurrentUser.CreateSubKey(RegistryPath))
                 {
                     key.SetValue(ReferenceLabelModeName, (int)value);
+                }
+            }
+        }
+
+        public CombinedPassageMode CombinedPassageMode
+        {
+            get
+            {
+                using (RegistryKey key = Registry.CurrentUser.OpenSubKey(RegistryPath))
+                {
+                    object raw = key == null ? null : key.GetValue(CombinedPassageModeName);
+                    int value;
+                    if (raw == null || !int.TryParse(raw.ToString(), out value))
+                    {
+                        return CombinedPassageMode.CompactEllipsis;
+                    }
+                    return value == (int)CombinedPassageMode.GroupedLines
+                        ? CombinedPassageMode.GroupedLines
+                        : CombinedPassageMode.CompactEllipsis;
+                }
+            }
+            set
+            {
+                using (RegistryKey key = Registry.CurrentUser.CreateSubKey(RegistryPath))
+                {
+                    key.SetValue(CombinedPassageModeName, (int)value);
                 }
             }
         }
