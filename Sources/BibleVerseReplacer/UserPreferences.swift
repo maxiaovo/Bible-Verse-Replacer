@@ -10,6 +10,7 @@ final class UserPreferences {
         static let outputFormat = "outputFormat"
         static let referenceLabelMode = "referenceLabelMode"
         static let combinedPassageMode = "combinedPassageMode"
+        static let autoCheckUpdates = "autoCheckUpdates"
         static let shortcut = "shortcut"
     }
 
@@ -51,6 +52,19 @@ final class UserPreferences {
         }
         set {
             defaults.set(newValue.rawValue, forKey: Keys.combinedPassageMode)
+            notifyChanged()
+        }
+    }
+
+    var autoCheckUpdates: Bool {
+        get {
+            guard defaults.object(forKey: Keys.autoCheckUpdates) != nil else {
+                return true
+            }
+            return defaults.bool(forKey: Keys.autoCheckUpdates)
+        }
+        set {
+            defaults.set(newValue, forKey: Keys.autoCheckUpdates)
             notifyChanged()
         }
     }

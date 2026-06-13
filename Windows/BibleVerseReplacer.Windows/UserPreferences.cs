@@ -32,6 +32,7 @@ namespace BibleVerseReplacer.Windows
         private const string OutputFormatName = "OutputFormat";
         private const string ReferenceLabelModeName = "ReferenceLabelMode";
         private const string CombinedPassageModeName = "CombinedPassageMode";
+        private const string AutoCheckUpdatesName = "AutoCheckUpdates";
 
         private UserPreferences()
         {
@@ -125,6 +126,30 @@ namespace BibleVerseReplacer.Windows
                 using (RegistryKey key = Registry.CurrentUser.CreateSubKey(RegistryPath))
                 {
                     key.SetValue(CombinedPassageModeName, (int)value);
+                }
+            }
+        }
+
+        public bool AutoCheckUpdates
+        {
+            get
+            {
+                using (RegistryKey key = Registry.CurrentUser.OpenSubKey(RegistryPath))
+                {
+                    object raw = key == null ? null : key.GetValue(AutoCheckUpdatesName);
+                    int value;
+                    if (raw == null || !int.TryParse(raw.ToString(), out value))
+                    {
+                        return true;
+                    }
+                    return value != 0;
+                }
+            }
+            set
+            {
+                using (RegistryKey key = Registry.CurrentUser.CreateSubKey(RegistryPath))
+                {
+                    key.SetValue(AutoCheckUpdatesName, value ? 1 : 0);
                 }
             }
         }

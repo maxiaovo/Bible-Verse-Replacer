@@ -59,6 +59,7 @@
     <Compile Include="SelfTest.cs" />
     <Compile Include="SettingsForm.cs" />
     <Compile Include="StartupManager.cs" />
+    <Compile Include="UpdateChecker.cs" />
     <Compile Include="UserPreferences.cs" />
     <Compile Include="VerseFormatter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

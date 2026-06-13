@@ -5,11 +5,18 @@ final class StatusBarController: NSObject {
     private let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
     private let onReplace: () -> Void
     private let onSettings: () -> Void
+    private let onCheckUpdates: () -> Void
     private let onQuit: () -> Void
 
-    init(onReplace: @escaping () -> Void, onSettings: @escaping () -> Void, onQuit: @escaping () -> Void) {
+    init(
+        onReplace: @escaping () -> Void,
+        onSettings: @escaping () -> Void,
+        onCheckUpdates: @escaping () -> Void,
+        onQuit: @escaping () -> Void
+    ) {
         self.onReplace = onReplace
         self.onSettings = onSettings
+        self.onCheckUpdates = onCheckUpdates
         self.onQuit = onQuit
         super.init()
         configure()
@@ -58,6 +65,10 @@ final class StatusBarController: NSObject {
         sourceItem.target = self
         menu.addItem(sourceItem)
 
+        let updateItem = NSMenuItem(title: "检查更新", action: #selector(checkUpdates), keyEquivalent: "")
+        updateItem.target = self
+        menu.addItem(updateItem)
+
         menu.addItem(.separator())
 
         let quitItem = NSMenuItem(title: "退出", action: #selector(quit), keyEquivalent: "q")
@@ -84,6 +95,10 @@ final class StatusBarController: NSObject {
         if let url = URL(string: "https://ebible.org/Scriptures/details.php?id=cmn-cu89s") {
             NSWorkspace.shared.open(url)
         }
+    }
+
+    @objc private func checkUpdates() {
+        onCheckUpdates()
     }
 
     @objc private func quit() {

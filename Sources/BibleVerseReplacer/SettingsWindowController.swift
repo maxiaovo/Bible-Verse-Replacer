@@ -11,6 +11,7 @@ final class SettingsWindowController: NSWindowController {
     private let referenceLabelPopup = NSPopUpButton(frame: .zero, pullsDown: false)
     private let combinedPassagePopup = NSPopUpButton(frame: .zero, pullsDown: false)
     private let permissionStatusLabel = NSTextField(labelWithString: "")
+    private let autoUpdateCheckbox = NSButton(checkboxWithTitle: "自动检查更新", target: nil, action: nil)
     private let loginItemCheckbox = NSButton(checkboxWithTitle: "开机自启动", target: nil, action: nil)
     private let loginStatusLabel = NSTextField(labelWithString: "")
     private let bibleInfoLabel = NSTextField(labelWithString: "")
@@ -26,7 +27,7 @@ final class SettingsWindowController: NSWindowController {
         self.shortcutButton = ShortcutRecorderButton(shortcut: preferences.shortcut)
 
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 540, height: 465),
+            contentRect: NSRect(x: 0, y: 0, width: 540, height: 500),
             styleMask: [.titled, .closable, .miniaturizable],
             backing: .buffered,
             defer: false
@@ -58,6 +59,7 @@ final class SettingsWindowController: NSWindowController {
         selectCurrentReferenceLabelMode()
         selectCurrentCombinedPassageMode()
         permissionStatusLabel.stringValue = PermissionManager.isAccessibilityTrusted ? "辅助功能权限：已允许" : "辅助功能权限：未允许"
+        autoUpdateCheckbox.state = preferences.autoCheckUpdates ? .on : .off
         loginItemCheckbox.state = LoginItemManager.isEnabled ? .on : .off
         loginStatusLabel.stringValue = "开机启动：\(LoginItemManager.statusText)"
         bibleInfoLabel.stringValue = "经文库：\(bibleStore.sourceSummary)"
@@ -107,6 +109,9 @@ final class SettingsWindowController: NSWindowController {
         loginItemCheckbox.target = self
         loginItemCheckbox.action = #selector(loginItemChanged)
 
+        autoUpdateCheckbox.target = self
+        autoUpdateCheckbox.action = #selector(autoUpdateChanged)
+
         let sourceButton = NSButton(title: "打开 eBible 来源页面", target: self, action: #selector(openSourcePage))
         sourceButton.bezelStyle = .rounded
 
@@ -121,6 +126,7 @@ final class SettingsWindowController: NSWindowController {
         root.addArrangedSubview(separator())
         root.addArrangedSubview(row(label: "权限", view: permissionStatusLabel))
         root.addArrangedSubview(permissionButton)
+        root.addArrangedSubview(row(label: "更新", view: autoUpdateCheckbox))
         root.addArrangedSubview(row(label: "启动", view: loginItemCheckbox))
         root.addArrangedSubview(loginStatusLabel)
         root.addArrangedSubview(separator())
@@ -228,6 +234,10 @@ final class SettingsWindowController: NSWindowController {
             notifier.notify(error.localizedDescription)
         }
         refresh()
+    }
+
+    @objc private func autoUpdateChanged() {
+        preferences.autoCheckUpdates = autoUpdateCheckbox.state == .on
     }
 
     @objc private func openSourcePage() {
