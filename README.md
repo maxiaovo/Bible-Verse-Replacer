@@ -23,12 +23,12 @@ Bible Verse Replacer 是一个常驻 macOS 菜单栏的小工具。它适合写�
 
 ## 下载
 
-请到 [Releases](https://github.com/maxiaovo/Bible-Verse-Replacer/releases) 下载最新版本的 `BibleVerseReplacer-v0.1.5.zip`。
+请到 [Releases](https://github.com/maxiaovo/Bible-Verse-Replacer/releases) 下载最新版本的 `BibleVerseReplacer-v0.1.6.zip`。
 
 当前版本是早期预览版：
 
-- macOS：下载 `BibleVerseReplacer-v0.1.5.zip`，支持 macOS 13 Ventura 及以上。
-- Windows：下载 `BibleVerseReplacer-Windows-v0.1.5.zip`，支持 Windows 7 SP1 及以上，需要 .NET Framework 4.8。
+- macOS：下载 `BibleVerseReplacer-v0.1.6.zip`，支持 macOS 13 Ventura 及以上。
+- Windows：下载 `BibleVerseReplacer-Windows-v0.1.6.zip`，支持 Windows 7 SP1 及以上，需要 .NET Framework 4.8。
 - 当前成品尚未做 Apple notarization 公证或 Windows 代码签名。
 - 如果 macOS 提示无法打开，请在 Finder 中右键 App，选择“打开”，再确认打开。
 
@@ -36,18 +36,19 @@ Bible Verse Replacer 是一个常驻 macOS 菜单栏的小工具。它适合写�
 
 ### macOS
 
-1. 下载并解压 `BibleVerseReplacer-v0.1.5.zip`。
+1. 下载并解压 `BibleVerseReplacer-v0.1.6.zip`。
 2. 打开 `BibleVerseReplacer.app`，菜单栏会出现一个「经」字图标。
 3. 按提示授予“辅助功能”权限。这个权限用于模拟复制和粘贴。
 4. 在任意 App 中选中经文引用，比如 `创世记 1:1`。
 5. 按默认快捷键 `⌃⌥⌘B`。
 
 如果权限没有打开，可以点击菜单栏「经」图标，进入设置或打开辅助功能设置。
+菜单栏里的辅助功能权限状态会在每次打开菜单时重新读取系统状态。
 
 ### Windows
 
 1. 确认系统是 Windows 7 SP1 或更新版本，并已安装 [.NET Framework 4.8](https://support.microsoft.com/topic/microsoft-net-framework-4-8-offline-installer-for-windows-9d23f658-3b97-68ab-d013-aa3c3e7495e0)。
-2. 下载并解压 `BibleVerseReplacer-Windows-v0.1.5.zip`。
+2. 下载并解压 `BibleVerseReplacer-Windows-v0.1.6.zip`。
 3. 运行 `BibleVerseReplacer.exe`，系统托盘会出现应用图标。
 4. 在任意 App 中选中经文引用，比如 `创世记 1:1`。
 5. 按默认快捷键 `Ctrl + Alt + Win + B`。

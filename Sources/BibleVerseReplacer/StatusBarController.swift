@@ -2,6 +2,11 @@ import AppKit
 import Foundation
 
 final class StatusBarController: NSObject {
+    private enum MenuTag {
+        static let shortcut = 1001
+        static let permission = 1002
+    }
+
     private let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
     private let onReplace: () -> Void
     private let onSettings: () -> Void
@@ -37,12 +42,14 @@ final class StatusBarController: NSObject {
 
     private func buildMenu() -> NSMenu {
         let menu = NSMenu()
+        menu.delegate = self
 
         let replaceItem = NSMenuItem(title: "替换所选经文", action: #selector(replaceSelected), keyEquivalent: "")
         replaceItem.target = self
         menu.addItem(replaceItem)
 
         let shortcutItem = NSMenuItem(title: "当前快捷键：\(UserPreferences.shared.shortcut.displayString)", action: nil, keyEquivalent: "")
+        shortcutItem.tag = MenuTag.shortcut
         shortcutItem.isEnabled = false
         menu.addItem(shortcutItem)
 
@@ -58,6 +65,7 @@ final class StatusBarController: NSObject {
 
         let permissionTitle = PermissionManager.isAccessibilityTrusted ? "辅助功能权限：已允许" : "辅助功能权限：未允许"
         let permissionItem = NSMenuItem(title: permissionTitle, action: #selector(openAccessibilitySettings), keyEquivalent: "")
+        permissionItem.tag = MenuTag.permission
         permissionItem.target = self
         menu.addItem(permissionItem)
 
@@ -103,5 +111,14 @@ final class StatusBarController: NSObject {
 
     @objc private func quit() {
         onQuit()
+    }
+}
+
+extension StatusBarController: NSMenuDelegate {
+    func menuWillOpen(_ menu: NSMenu) {
+        menu.item(withTag: MenuTag.shortcut)?.title = "当前快捷键：\(UserPreferences.shared.shortcut.displayString)"
+        menu.item(withTag: MenuTag.permission)?.title = PermissionManager.isAccessibilityTrusted
+            ? "辅助功能权限：已允许"
+            : "辅助功能权限：未允许"
     }
 }
