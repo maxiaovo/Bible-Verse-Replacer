@@ -270,6 +270,8 @@ enum SelfTest {
             }
 
             try assertUpdateDownloadStaging()
+            try assertUpdateDownloadStagingCreatesDestinationDirectory()
+            try assertUpdateDownloadStagingReportsMissingSource()
 
             print("Self-test passed")
             return 0
@@ -372,6 +374,44 @@ enum SelfTest {
               !FileManager.default.fileExists(atPath: downloadURL.path),
               try Data(contentsOf: stagedURL) == payload else {
             throw TestFailure("Expected updater to synchronously move temporary download to stable update.zip")
+        }
+    }
+
+    private static func assertUpdateDownloadStagingCreatesDestinationDirectory() throws {
+        let rootDirectory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("BibleVerseReplacerSelfTest-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: rootDirectory, withIntermediateDirectories: true)
+        defer {
+            try? FileManager.default.removeItem(at: rootDirectory)
+        }
+
+        let downloadURL = rootDirectory.appendingPathComponent("CFNetworkDownload_test.tmp")
+        let payload = Data("zip payload".utf8)
+        try payload.write(to: downloadURL)
+
+        let missingTempDirectory = rootDirectory.appendingPathComponent("missing/staging", isDirectory: true)
+        let stagedURL = try UpdateInstaller.stageDownloadedFile(at: downloadURL, tempDirectory: missingTempDirectory)
+        guard FileManager.default.fileExists(atPath: stagedURL.path),
+              try Data(contentsOf: stagedURL) == payload else {
+            throw TestFailure("Expected updater to create the staging directory before moving the download")
+        }
+    }
+
+    private static func assertUpdateDownloadStagingReportsMissingSource() throws {
+        let tempDirectory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("BibleVerseReplacerSelfTest-\(UUID().uuidString)", isDirectory: true)
+        defer {
+            try? FileManager.default.removeItem(at: tempDirectory)
+        }
+
+        let missingDownload = tempDirectory.appendingPathComponent("CFNetworkDownload_missing.tmp")
+        do {
+            _ = try UpdateInstaller.stageDownloadedFile(at: missingDownload, tempDirectory: tempDirectory)
+            throw TestFailure("Expected updater staging to fail when the download has already been removed")
+        } catch {
+            guard error.localizedDescription.contains("下载临时文件") else {
+                throw TestFailure("Expected missing download error, got \(error.localizedDescription)")
+            }
         }
     }
 }

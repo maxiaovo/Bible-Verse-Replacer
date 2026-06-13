@@ -180,12 +180,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
             let openSettings = self.notifier.alert(
                 title: "需要辅助功能权限",
-                message: "经文替换需要模拟复制和粘贴。请在系统设置的“隐私与安全性 > 辅助功能”中允许 BibleVerseReplacer。",
-                primaryButton: "打开系统设置",
+                message: "经文替换需要模拟复制和粘贴。如果系统设置里已经打开但这里仍提示未允许，请重新申请一次。",
+                primaryButton: "重新申请权限",
                 secondaryButton: "稍后"
             )
             if openSettings {
-                PermissionManager.openAccessibilitySettings()
+                PermissionManager.repairAccessibilityPermission()
             }
         }
     }

@@ -62,7 +62,7 @@ final class SettingsWindowController: NSWindowController {
         selectCurrentReferenceLabelMode()
         selectCurrentCombinedPassageMode()
         selectCurrentQuotationStyle()
-        permissionStatusLabel.stringValue = PermissionManager.isAccessibilityTrusted ? "辅助功能权限：已允许" : "辅助功能权限：未允许"
+        permissionStatusLabel.stringValue = PermissionManager.isAccessibilityTrusted ? "辅助功能权限：已允许" : "辅助功能权限：未允许，可重新申请"
         autoUpdateCheckbox.state = preferences.autoCheckUpdates ? .on : .off
         loginItemCheckbox.state = LoginItemManager.isEnabled ? .on : .off
         loginStatusLabel.stringValue = "开机启动：\(LoginItemManager.statusText)"
@@ -108,7 +108,7 @@ final class SettingsWindowController: NSWindowController {
             self?.preferences.shortcut = shortcut
         }
 
-        let permissionButton = NSButton(title: "打开辅助功能设置", target: self, action: #selector(openAccessibilitySettings))
+        let permissionButton = NSButton(title: "重新申请辅助功能权限", target: self, action: #selector(repairAccessibilityPermission))
         permissionButton.bezelStyle = .rounded
 
         loginItemCheckbox.target = self
@@ -265,9 +265,8 @@ final class SettingsWindowController: NSWindowController {
         preferences.quotationStyle = QuotationStyle.allCases[index]
     }
 
-    @objc private func openAccessibilitySettings() {
-        PermissionManager.requestAccessibilityPrompt()
-        PermissionManager.openAccessibilitySettings()
+    @objc private func repairAccessibilityPermission() {
+        PermissionManager.repairAccessibilityPermission()
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) { [weak self] in
             self?.refresh()
         }

@@ -71,8 +71,7 @@ final class StatusBarController: NSObject {
         settingsItem.target = self
         menu.addItem(settingsItem)
 
-        let permissionTitle = PermissionManager.isAccessibilityTrusted ? "辅助功能权限：已允许" : "辅助功能权限：未允许"
-        let permissionItem = NSMenuItem(title: permissionTitle, action: #selector(openAccessibilitySettings), keyEquivalent: "")
+        let permissionItem = NSMenuItem(title: permissionTitle, action: #selector(repairAccessibilityPermission), keyEquivalent: "")
         permissionItem.tag = MenuTag.permission
         permissionItem.target = self
         menu.addItem(permissionItem)
@@ -102,9 +101,8 @@ final class StatusBarController: NSObject {
         onSettings()
     }
 
-    @objc private func openAccessibilitySettings() {
-        PermissionManager.requestAccessibilityPrompt()
-        PermissionManager.openAccessibilitySettings()
+    @objc private func repairAccessibilityPermission() {
+        PermissionManager.repairAccessibilityPermission()
     }
 
     @objc private func openSourcePage() {
@@ -129,8 +127,10 @@ final class StatusBarController: NSObject {
 extension StatusBarController: NSMenuDelegate {
     func menuWillOpen(_ menu: NSMenu) {
         menu.item(withTag: MenuTag.shortcut)?.title = "当前快捷键：\(UserPreferences.shared.shortcut.displayString)"
-        menu.item(withTag: MenuTag.permission)?.title = PermissionManager.isAccessibilityTrusted
-            ? "辅助功能权限：已允许"
-            : "辅助功能权限：未允许"
+        menu.item(withTag: MenuTag.permission)?.title = permissionTitle
+    }
+
+    private var permissionTitle: String {
+        PermissionManager.isAccessibilityTrusted ? "辅助功能权限：已允许" : "辅助功能权限：未允许，点击修复"
     }
 }

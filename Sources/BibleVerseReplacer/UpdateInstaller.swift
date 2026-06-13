@@ -95,11 +95,23 @@ final class UpdateInstaller: NSObject {
     }
 
     static func stageDownloadedFile(at location: URL, tempDirectory: URL) throws -> URL {
+        try FileManager.default.createDirectory(at: tempDirectory, withIntermediateDirectories: true)
+        guard FileManager.default.fileExists(atPath: location.path) else {
+            throw UpdateInstallError.downloadedFileUnavailable
+        }
+
         let zipURL = tempDirectory.appendingPathComponent("update.zip")
         if FileManager.default.fileExists(atPath: zipURL.path) {
             try FileManager.default.removeItem(at: zipURL)
         }
-        try FileManager.default.moveItem(at: location, to: zipURL)
+        do {
+            try FileManager.default.moveItem(at: location, to: zipURL)
+        } catch {
+            guard FileManager.default.fileExists(atPath: location.path) else {
+                throw UpdateInstallError.downloadedFileUnavailable
+            }
+            throw error
+        }
         return zipURL
     }
 
@@ -278,6 +290,7 @@ extension UpdateInstaller: URLSessionDownloadDelegate {
 
 private enum UpdateInstallError: LocalizedError {
     case missingTempDirectory
+    case downloadedFileUnavailable
     case appNotFound
     case commandFailed(String, Int32)
 
@@ -285,6 +298,8 @@ private enum UpdateInstallError: LocalizedError {
         switch self {
         case .missingTempDirectory:
             return "没有可用的临时目录。"
+        case .downloadedFileUnavailable:
+            return "下载临时文件已被系统清理。请重新检查更新；如果当前版本低于 v0.1.10，请先手动安装最新版一次。"
         case .appNotFound:
             return "安装包中没有找到 BibleVerseReplacer.app。"
         case let .commandFailed(command, status):
