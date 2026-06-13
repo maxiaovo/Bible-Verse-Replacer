@@ -8,6 +8,7 @@ final class UserPreferences {
 
     private enum Keys {
         static let outputFormat = "outputFormat"
+        static let referenceLabelMode = "referenceLabelMode"
         static let shortcut = "shortcut"
     }
 
@@ -21,6 +22,20 @@ final class UserPreferences {
         }
         set {
             defaults.set(newValue.rawValue, forKey: Keys.outputFormat)
+            notifyChanged()
+        }
+    }
+
+    var referenceLabelMode: ReferenceLabelMode {
+        get {
+            guard let raw = defaults.string(forKey: Keys.referenceLabelMode),
+                  let value = ReferenceLabelMode(rawValue: raw) else {
+                return .normalizedFull
+            }
+            return value
+        }
+        set {
+            defaults.set(newValue.rawValue, forKey: Keys.referenceLabelMode)
             notifyChanged()
         }
     }
@@ -45,4 +60,3 @@ final class UserPreferences {
         NotificationCenter.default.post(name: Self.didChangeNotification, object: self)
     }
 }
-

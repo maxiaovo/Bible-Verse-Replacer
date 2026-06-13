@@ -9,6 +9,7 @@ namespace BibleVerseReplacer.Windows
         private readonly Action onPreferencesChanged;
         private readonly TextBox shortcutTextBox = new TextBox();
         private readonly ComboBox outputFormatComboBox = new ComboBox();
+        private readonly ComboBox referenceLabelComboBox = new ComboBox();
         private readonly CheckBox startupCheckBox = new CheckBox();
         private readonly Label dataLabel = new Label();
         private bool recordingShortcut;
@@ -18,8 +19,8 @@ namespace BibleVerseReplacer.Windows
             this.onPreferencesChanged = onPreferencesChanged;
             Text = "Bible Verse Replacer 设置";
             StartPosition = FormStartPosition.CenterScreen;
-            Size = new Size(520, 330);
-            MinimumSize = new Size(520, 330);
+            Size = new Size(520, 370);
+            MinimumSize = new Size(520, 370);
             MaximizeBox = false;
             KeyPreview = true;
 
@@ -114,23 +115,39 @@ namespace BibleVerseReplacer.Windows
             };
             Controls.Add(outputFormatComboBox);
 
+            AddLabel("引用标签", 30, 176);
+            referenceLabelComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
+            referenceLabelComboBox.Location = new Point(120, 172);
+            referenceLabelComboBox.Width = 260;
+            referenceLabelComboBox.Items.Add("改写为完整标签");
+            referenceLabelComboBox.Items.Add("保留输入标签");
+            referenceLabelComboBox.Items.Add("不保留标签");
+            referenceLabelComboBox.SelectedIndexChanged += delegate
+            {
+                if (referenceLabelComboBox.SelectedIndex >= 0)
+                {
+                    UserPreferences.Instance.ReferenceLabelMode = (ReferenceLabelMode)referenceLabelComboBox.SelectedIndex;
+                }
+            };
+            Controls.Add(referenceLabelComboBox);
+
             startupCheckBox.Text = "开机自启动";
             startupCheckBox.AutoSize = true;
-            startupCheckBox.Location = new Point(120, 176);
+            startupCheckBox.Location = new Point(120, 214);
             startupCheckBox.CheckedChanged += delegate
             {
                 StartupManager.SetEnabled(startupCheckBox.Checked);
             };
             Controls.Add(startupCheckBox);
 
-            AddLabel("经文库", 30, 220);
+            AddLabel("经文库", 30, 258);
             dataLabel.AutoSize = true;
-            dataLabel.Location = new Point(120, 220);
+            dataLabel.Location = new Point(120, 258);
             Controls.Add(dataLabel);
 
             Button closeButton = new Button();
             closeButton.Text = "关闭";
-            closeButton.Location = new Point(390, 250);
+            closeButton.Location = new Point(390, 290);
             closeButton.Width = 80;
             closeButton.Click += delegate { Hide(); };
             Controls.Add(closeButton);
@@ -140,6 +157,7 @@ namespace BibleVerseReplacer.Windows
         {
             shortcutTextBox.Text = UserPreferences.Instance.Shortcut.DisplayText;
             outputFormatComboBox.SelectedIndex = (int)UserPreferences.Instance.OutputFormat;
+            referenceLabelComboBox.SelectedIndex = (int)UserPreferences.Instance.ReferenceLabelMode;
             startupCheckBox.Checked = StartupManager.IsEnabled;
             dataLabel.Text = BibleStore.Instance.SourceSummary;
         }
@@ -155,4 +173,3 @@ namespace BibleVerseReplacer.Windows
         }
     }
 }
-

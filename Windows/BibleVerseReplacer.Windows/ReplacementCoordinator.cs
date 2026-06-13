@@ -33,7 +33,9 @@ namespace BibleVerseReplacer.Windows
                 string replacement = formatter.Format(
                     reference,
                     BibleStore.Instance.VersesFor(reference),
-                    UserPreferences.Instance.OutputFormat);
+                    UserPreferences.Instance.OutputFormat,
+                    UserPreferences.Instance.ReferenceLabelMode,
+                    selectedText);
 
                 clipboard.Paste(replacement);
                 Timer restoreTimer = new Timer();
@@ -61,4 +63,3 @@ namespace BibleVerseReplacer.Windows
         }
     }
 }
-

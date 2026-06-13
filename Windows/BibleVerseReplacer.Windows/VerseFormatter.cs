@@ -5,16 +5,21 @@ namespace BibleVerseReplacer.Windows
 {
     internal sealed class VerseFormatter
     {
-        public string Format(VerseReference reference, IList<BibleVerse> verses, OutputFormat format)
+        public string Format(
+            VerseReference reference,
+            IList<BibleVerse> verses,
+            OutputFormat format,
+            ReferenceLabelMode labelMode,
+            string originalReference)
         {
             switch (format)
             {
                 case OutputFormat.ContinuousText:
-                    return JoinContinuous(verses);
+                    return ApplyLabelIfNeeded(reference, JoinContinuous(verses), labelMode, originalReference, " ");
                 case OutputFormat.ReferenceHeader:
                     return reference.DisplayText + "\r\n" + JoinLines(verses, false, reference);
                 case OutputFormat.NumberedVerses:
-                    return JoinNumbered(verses);
+                    return ApplyLabelIfNeeded(reference, JoinNumbered(verses), labelMode, originalReference, "\r\n");
                 default:
                     return JoinLines(verses, true, reference);
             }
@@ -73,6 +78,48 @@ namespace BibleVerseReplacer.Windows
         {
             return (text ?? string.Empty).Replace("\u3000", string.Empty).Trim();
         }
+
+        private static string ApplyLabelIfNeeded(
+            VerseReference reference,
+            string body,
+            ReferenceLabelMode labelMode,
+            string originalReference,
+            string separator)
+        {
+            string label = LabelText(reference, labelMode, originalReference);
+            if (string.IsNullOrEmpty(label))
+            {
+                return body;
+            }
+            return label + separator + body;
+        }
+
+        private static string LabelText(VerseReference reference, ReferenceLabelMode labelMode, string originalReference)
+        {
+            switch (labelMode)
+            {
+                case ReferenceLabelMode.PreserveInput:
+                    return CleanOriginalReference(originalReference);
+                case ReferenceLabelMode.Omit:
+                    return null;
+                default:
+                    return reference.DisplayText;
+            }
+        }
+
+        private static string CleanOriginalReference(string raw)
+        {
+            string text = (raw ?? string.Empty)
+                .Trim()
+                .Replace('\n', ' ')
+                .Replace('\t', ' ')
+                .Trim('"', '\'', '“', '”', ' ', '\r', '\n', '\t');
+
+            while (text.Contains("  "))
+            {
+                text = text.Replace("  ", " ");
+            }
+            return text;
+        }
     }
 }
-

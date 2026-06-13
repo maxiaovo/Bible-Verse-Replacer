@@ -8,6 +8,7 @@ final class SettingsWindowController: NSWindowController {
 
     private let shortcutButton: ShortcutRecorderButton
     private let outputPopup = NSPopUpButton(frame: .zero, pullsDown: false)
+    private let referenceLabelPopup = NSPopUpButton(frame: .zero, pullsDown: false)
     private let permissionStatusLabel = NSTextField(labelWithString: "")
     private let loginItemCheckbox = NSButton(checkboxWithTitle: "开机自启动", target: nil, action: nil)
     private let loginStatusLabel = NSTextField(labelWithString: "")
@@ -24,7 +25,7 @@ final class SettingsWindowController: NSWindowController {
         self.shortcutButton = ShortcutRecorderButton(shortcut: preferences.shortcut)
 
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 540, height: 360),
+            contentRect: NSRect(x: 0, y: 0, width: 540, height: 410),
             styleMask: [.titled, .closable, .miniaturizable],
             backing: .buffered,
             defer: false
@@ -53,6 +54,7 @@ final class SettingsWindowController: NSWindowController {
     func refresh() {
         shortcutButton.update(shortcut: preferences.shortcut)
         selectCurrentOutputFormat()
+        selectCurrentReferenceLabelMode()
         permissionStatusLabel.stringValue = PermissionManager.isAccessibilityTrusted ? "辅助功能权限：已允许" : "辅助功能权限：未允许"
         loginItemCheckbox.state = LoginItemManager.isEnabled ? .on : .off
         loginStatusLabel.stringValue = "开机启动：\(LoginItemManager.statusText)"
@@ -81,6 +83,10 @@ final class SettingsWindowController: NSWindowController {
         outputPopup.target = self
         outputPopup.action = #selector(outputFormatChanged)
 
+        referenceLabelPopup.addItems(withTitles: ReferenceLabelMode.allCases.map(\.title))
+        referenceLabelPopup.target = self
+        referenceLabelPopup.action = #selector(referenceLabelModeChanged)
+
         shortcutButton.onShortcutRecorded = { [weak self] shortcut in
             self?.preferences.shortcut = shortcut
         }
@@ -99,6 +105,7 @@ final class SettingsWindowController: NSWindowController {
         root.addArrangedSubview(separator())
         root.addArrangedSubview(row(label: "快捷键", view: shortcutButton))
         root.addArrangedSubview(row(label: "输出格式", view: outputPopup))
+        root.addArrangedSubview(row(label: "引用标签", view: referenceLabelPopup))
         root.addArrangedSubview(separator())
         root.addArrangedSubview(row(label: "权限", view: permissionStatusLabel))
         root.addArrangedSubview(permissionButton)
@@ -116,7 +123,8 @@ final class SettingsWindowController: NSWindowController {
             root.trailingAnchor.constraint(equalTo: window.contentView!.trailingAnchor, constant: -28),
             root.topAnchor.constraint(equalTo: window.contentView!.topAnchor, constant: 24),
             shortcutButton.widthAnchor.constraint(greaterThanOrEqualToConstant: 160),
-            outputPopup.widthAnchor.constraint(greaterThanOrEqualToConstant: 220)
+            outputPopup.widthAnchor.constraint(greaterThanOrEqualToConstant: 220),
+            referenceLabelPopup.widthAnchor.constraint(greaterThanOrEqualToConstant: 220)
         ])
     }
 
@@ -152,12 +160,28 @@ final class SettingsWindowController: NSWindowController {
         outputPopup.selectItem(at: index)
     }
 
+    private func selectCurrentReferenceLabelMode() {
+        let allCases = ReferenceLabelMode.allCases
+        guard let index = allCases.firstIndex(of: preferences.referenceLabelMode) else {
+            return
+        }
+        referenceLabelPopup.selectItem(at: index)
+    }
+
     @objc private func outputFormatChanged() {
         let index = outputPopup.indexOfSelectedItem
         guard OutputFormat.allCases.indices.contains(index) else {
             return
         }
         preferences.outputFormat = OutputFormat.allCases[index]
+    }
+
+    @objc private func referenceLabelModeChanged() {
+        let index = referenceLabelPopup.indexOfSelectedItem
+        guard ReferenceLabelMode.allCases.indices.contains(index) else {
+            return
+        }
+        preferences.referenceLabelMode = ReferenceLabelMode.allCases[index]
     }
 
     @objc private func openAccessibilitySettings() {
@@ -183,4 +207,3 @@ final class SettingsWindowController: NSWindowController {
         }
     }
 }
-

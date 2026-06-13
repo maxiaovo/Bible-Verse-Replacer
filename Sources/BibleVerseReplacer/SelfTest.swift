@@ -18,6 +18,33 @@ enum SelfTest {
             )
 
             try assertFormatted(
+                raw: "创 1:1",
+                expected: "创世记 1:1 起初，神创造天地。",
+                parser: parser,
+                formatter: formatter,
+                format: .continuousText,
+                labelMode: .normalizedFull
+            )
+
+            try assertFormatted(
+                raw: "创 1:1",
+                expected: "创 1:1 起初，神创造天地。",
+                parser: parser,
+                formatter: formatter,
+                format: .continuousText,
+                labelMode: .preserveInput
+            )
+
+            try assertFormatted(
+                raw: "创 1:1",
+                expected: "起初，神创造天地。",
+                parser: parser,
+                formatter: formatter,
+                format: .continuousText,
+                labelMode: .omit
+            )
+
+            try assertFormatted(
                 raw: "创3：2－5",
                 expectedPrefix: "创世记 3:2 女人对蛇说",
                 parser: parser,
@@ -63,7 +90,18 @@ enum SelfTest {
         formatter: VerseFormatter,
         format: OutputFormat
     ) throws {
-        let actual = try formatted(raw: raw, parser: parser, formatter: formatter, format: format)
+        try assertFormatted(raw: raw, expected: expected, parser: parser, formatter: formatter, format: format, labelMode: .normalizedFull)
+    }
+
+    private static func assertFormatted(
+        raw: String,
+        expected: String,
+        parser: ReferenceParser,
+        formatter: VerseFormatter,
+        format: OutputFormat,
+        labelMode: ReferenceLabelMode
+    ) throws {
+        let actual = try formatted(raw: raw, parser: parser, formatter: formatter, format: format, labelMode: labelMode)
         if actual != expected {
             throw TestFailure("For \(raw), expected \(expected), got \(actual)")
         }
@@ -76,7 +114,7 @@ enum SelfTest {
         formatter: VerseFormatter,
         format: OutputFormat
     ) throws {
-        let actual = try formatted(raw: raw, parser: parser, formatter: formatter, format: format)
+        let actual = try formatted(raw: raw, parser: parser, formatter: formatter, format: format, labelMode: .normalizedFull)
         if !actual.hasPrefix(expectedPrefix) {
             throw TestFailure("For \(raw), expected prefix \(expectedPrefix), got \(actual)")
         }
@@ -86,11 +124,12 @@ enum SelfTest {
         raw: String,
         parser: ReferenceParser,
         formatter: VerseFormatter,
-        format: OutputFormat
+        format: OutputFormat,
+        labelMode: ReferenceLabelMode
     ) throws -> String {
         let reference = try parser.parse(raw)
         let verses = try BibleStore.shared.verses(for: reference)
-        return formatter.format(reference: reference, verses: verses, format: format)
+        return formatter.format(reference: reference, verses: verses, format: format, labelMode: labelMode, originalReference: raw)
     }
 }
 
@@ -105,4 +144,3 @@ struct TestFailure: LocalizedError {
         message
     }
 }
-

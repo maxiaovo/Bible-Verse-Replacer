@@ -10,6 +10,13 @@ namespace BibleVerseReplacer.Windows
         NumberedVerses = 3
     }
 
+    internal enum ReferenceLabelMode
+    {
+        NormalizedFull = 0,
+        PreserveInput = 1,
+        Omit = 2
+    }
+
     internal sealed class UserPreferences
     {
         public static readonly UserPreferences Instance = new UserPreferences();
@@ -17,6 +24,7 @@ namespace BibleVerseReplacer.Windows
         private const string RegistryPath = @"Software\BibleVerseReplacer";
         private const string ShortcutName = "Shortcut";
         private const string OutputFormatName = "OutputFormat";
+        private const string ReferenceLabelModeName = "ReferenceLabelMode";
 
         private UserPreferences()
         {
@@ -63,6 +71,29 @@ namespace BibleVerseReplacer.Windows
                 }
             }
         }
+
+        public ReferenceLabelMode ReferenceLabelMode
+        {
+            get
+            {
+                using (RegistryKey key = Registry.CurrentUser.OpenSubKey(RegistryPath))
+                {
+                    object raw = key == null ? null : key.GetValue(ReferenceLabelModeName);
+                    int value;
+                    if (raw == null || !int.TryParse(raw.ToString(), out value))
+                    {
+                        return ReferenceLabelMode.NormalizedFull;
+                    }
+                    return (ReferenceLabelMode)value;
+                }
+            }
+            set
+            {
+                using (RegistryKey key = Registry.CurrentUser.CreateSubKey(RegistryPath))
+                {
+                    key.SetValue(ReferenceLabelModeName, (int)value);
+                }
+            }
+        }
     }
 }
-

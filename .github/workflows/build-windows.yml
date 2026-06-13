@@ -36,7 +36,7 @@ jobs:
       - name: Package
         shell: pwsh
         run: |
-          $version = "0.1.0"
+          $version = "0.1.1"
           $publish = "dist\windows\BibleVerseReplacer"
           New-Item -ItemType Directory -Force -Path $publish | Out-Null
           Copy-Item Windows\BibleVerseReplacer.Windows\bin\Release\BibleVerseReplacer.exe $publish\
@@ -50,7 +50,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: BibleVerseReplacer-Windows-v0.1.0
+          name: BibleVerseReplacer-Windows-v0.1.1
           path: |
-            dist/BibleVerseReplacer-Windows-v0.1.0.zip
-            dist/BibleVerseReplacer-Windows-v0.1.0-SHA256.txt
+            dist/BibleVerseReplacer-Windows-v0.1.1.zip
+            dist/BibleVerseReplacer-Windows-v0.1.1-SHA256.txt

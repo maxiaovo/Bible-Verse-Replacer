@@ -36,7 +36,13 @@ final class ReplacementCoordinator {
         do {
             let reference = try parser.parse(selectedText)
             let verses = try bibleStore.verses(for: reference)
-            let replacement = formatter.format(reference: reference, verses: verses, format: preferences.outputFormat)
+            let replacement = formatter.format(
+                reference: reference,
+                verses: verses,
+                format: preferences.outputFormat,
+                labelMode: preferences.referenceLabelMode,
+                originalReference: selectedText
+            )
             clipboard.paste(replacement)
 
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
@@ -48,4 +54,3 @@ final class ReplacementCoordinator {
         }
     }
 }
-
