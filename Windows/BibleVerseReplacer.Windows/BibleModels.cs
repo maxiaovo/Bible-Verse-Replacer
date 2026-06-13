@@ -105,6 +105,83 @@ namespace BibleVerseReplacer.Windows
         }
     }
 
+    internal sealed class PassageReference
+    {
+        public PassageReference(BibleBook book, int startChapter, int? startVerse, int endChapter, int? endVerse)
+        {
+            Book = book;
+            StartChapter = startChapter;
+            StartVerse = startVerse;
+            EndChapter = endChapter;
+            EndVerse = endVerse;
+        }
+
+        public PassageReference(VerseReference reference)
+        {
+            Book = reference.Book;
+            StartChapter = reference.Chapter;
+            StartVerse = reference.StartVerse;
+            EndChapter = reference.Chapter;
+            EndVerse = reference.EndVerse;
+        }
+
+        public BibleBook Book { get; private set; }
+        public int StartChapter { get; private set; }
+        public int? StartVerse { get; private set; }
+        public int EndChapter { get; private set; }
+        public int? EndVerse { get; private set; }
+
+        public bool IsWholeChapter
+        {
+            get { return !StartVerse.HasValue && !EndVerse.HasValue && StartChapter == EndChapter; }
+        }
+
+        public string DisplayText
+        {
+            get
+            {
+                if (IsWholeChapter || !StartVerse.HasValue || !EndVerse.HasValue)
+                {
+                    return Book.ChineseName + " 第" + StartChapter + "章";
+                }
+
+                if (StartChapter == EndChapter)
+                {
+                    if (StartVerse.Value == EndVerse.Value)
+                    {
+                        return Book.ChineseName + " " + StartChapter + ":" + StartVerse.Value;
+                    }
+                    return Book.ChineseName + " " + StartChapter + ":" + StartVerse.Value + "-" + EndVerse.Value;
+                }
+
+                return Book.ChineseName + " " + StartChapter + ":" + StartVerse.Value + "-" + EndChapter + ":" + EndVerse.Value;
+            }
+        }
+    }
+
+    internal sealed class ParsedReference
+    {
+        public ParsedReference(List<PassageReference> passages)
+        {
+            Passages = passages;
+        }
+
+        public List<PassageReference> Passages { get; private set; }
+
+        public string DisplayText
+        {
+            get
+            {
+                List<string> labels = new List<string>();
+                foreach (PassageReference passage in Passages)
+                {
+                    labels.Add(passage.DisplayText);
+                }
+                return string.Join("；", labels.ToArray());
+            }
+        }
+    }
+
     internal sealed class VerseKey
     {
         private readonly string value;
@@ -126,4 +203,3 @@ namespace BibleVerseReplacer.Windows
         }
     }
 }
-

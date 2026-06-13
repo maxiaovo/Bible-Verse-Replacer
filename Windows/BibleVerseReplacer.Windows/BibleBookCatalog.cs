@@ -76,11 +76,30 @@ namespace BibleVerseReplacer.Windows
         };
 
         private static readonly Dictionary<string, BibleBook> AliasMap = BuildAliasMap();
+        private static readonly List<KeyValuePair<string, BibleBook>> StartAliases = BuildStartAliases();
 
         public static BibleBook Find(string rawName)
         {
             BibleBook book;
             return AliasMap.TryGetValue(Normalize(rawName), out book) ? book : null;
+        }
+
+        public static bool FindAtStart(string compactText, out BibleBook book, out string remaining)
+        {
+            string text = NormalizeForBookStart(compactText);
+            foreach (KeyValuePair<string, BibleBook> candidate in StartAliases)
+            {
+                if (text.StartsWith(candidate.Key, StringComparison.Ordinal))
+                {
+                    book = candidate.Value;
+                    remaining = text.Substring(candidate.Key.Length);
+                    return true;
+                }
+            }
+
+            book = null;
+            remaining = compactText;
+            return false;
         }
 
         private static Dictionary<string, BibleBook> BuildAliasMap()
@@ -96,6 +115,22 @@ namespace BibleVerseReplacer.Windows
                 }
             }
             return map;
+        }
+
+        private static List<KeyValuePair<string, BibleBook>> BuildStartAliases()
+        {
+            List<KeyValuePair<string, BibleBook>> aliases = new List<KeyValuePair<string, BibleBook>>();
+            foreach (BibleBook book in Books)
+            {
+                aliases.Add(new KeyValuePair<string, BibleBook>(Normalize(book.Code), book));
+                aliases.Add(new KeyValuePair<string, BibleBook>(Normalize(book.ChineseName), book));
+                foreach (string alias in book.Aliases)
+                {
+                    aliases.Add(new KeyValuePair<string, BibleBook>(Normalize(alias), book));
+                }
+            }
+            aliases.Sort((left, right) => right.Key.Length.CompareTo(left.Key.Length));
+            return aliases;
         }
 
         private static string Normalize(string raw)
@@ -114,6 +149,21 @@ namespace BibleVerseReplacer.Windows
                 .Replace("啟", "启")
                 .Replace("詩", "诗");
         }
+
+        private static string NormalizeForBookStart(string raw)
+        {
+            return (raw ?? string.Empty)
+                .Trim()
+                .ToLowerInvariant()
+                .Replace(" ", string.Empty)
+                .Replace(".", string.Empty)
+                .Replace("_", string.Empty)
+                .Replace("前書", "前书")
+                .Replace("後書", "后书")
+                .Replace("記", "记")
+                .Replace("約", "约")
+                .Replace("啟", "启")
+                .Replace("詩", "诗");
+        }
     }
 }
-

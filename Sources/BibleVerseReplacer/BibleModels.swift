@@ -53,6 +53,61 @@ struct VerseReference: Equatable {
     }
 }
 
+struct PassageReference: Equatable {
+    let book: BibleBook
+    let startChapter: Int
+    let startVerse: Int?
+    let endChapter: Int
+    let endVerse: Int?
+
+    init(book: BibleBook, startChapter: Int, startVerse: Int?, endChapter: Int, endVerse: Int?) {
+        self.book = book
+        self.startChapter = startChapter
+        self.startVerse = startVerse
+        self.endChapter = endChapter
+        self.endVerse = endVerse
+    }
+
+    init(reference: VerseReference) {
+        self.book = reference.book
+        self.startChapter = reference.chapter
+        self.startVerse = reference.startVerse
+        self.endChapter = reference.chapter
+        self.endVerse = reference.endVerse
+    }
+
+    var isWholeChapter: Bool {
+        startVerse == nil && endVerse == nil && startChapter == endChapter
+    }
+
+    var displayText: String {
+        if isWholeChapter {
+            return "\(book.chineseName) 第\(startChapter)章"
+        }
+
+        guard let startVerse, let endVerse else {
+            return "\(book.chineseName) 第\(startChapter)章"
+        }
+
+        if startChapter == endChapter {
+            if startVerse == endVerse {
+                return "\(book.chineseName) \(startChapter):\(startVerse)"
+            }
+            return "\(book.chineseName) \(startChapter):\(startVerse)-\(endVerse)"
+        }
+
+        return "\(book.chineseName) \(startChapter):\(startVerse)-\(endChapter):\(endVerse)"
+    }
+}
+
+struct ParsedReference: Equatable {
+    let passages: [PassageReference]
+
+    var displayText: String {
+        passages.map(\.displayText).joined(separator: "；")
+    }
+}
+
 struct VerseKey: Hashable {
     let book: String
     let chapter: Int

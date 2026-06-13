@@ -86,8 +86,32 @@ enum BibleBookCatalog {
         return map
     }()
 
+    private static let startAliases: [(alias: String, book: BibleBook)] = {
+        var result: [(String, BibleBook)] = []
+        for book in books {
+            for alias in [book.chineseName, book.code] + book.aliases {
+                let normalizedAlias = normalize(alias)
+                if !normalizedAlias.isEmpty {
+                    result.append((normalizedAlias, book))
+                }
+            }
+        }
+        return result.sorted { lhs, rhs in
+            lhs.0.count > rhs.0.count
+        }
+    }()
+
     static func book(for rawName: String) -> BibleBook? {
         aliasMap[normalize(rawName)]
+    }
+
+    static func bookAtStart(of compactText: String) -> (book: BibleBook, remaining: String)? {
+        let text = normalizeForBookStart(compactText)
+        for candidate in startAliases where text.hasPrefix(candidate.alias) {
+            let remaining = String(text.dropFirst(candidate.alias.count))
+            return (candidate.book, remaining)
+        }
+        return nil
     }
 
     static func chineseName(for code: String) -> String {
@@ -109,5 +133,19 @@ enum BibleBookCatalog {
             .replacingOccurrences(of: "啟", with: "启")
             .replacingOccurrences(of: "詩", with: "诗")
     }
-}
 
+    private static func normalizeForBookStart(_ raw: String) -> String {
+        raw
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased()
+            .replacingOccurrences(of: " ", with: "")
+            .replacingOccurrences(of: ".", with: "")
+            .replacingOccurrences(of: "_", with: "")
+            .replacingOccurrences(of: "前書", with: "前书")
+            .replacingOccurrences(of: "後書", with: "后书")
+            .replacingOccurrences(of: "記", with: "记")
+            .replacingOccurrences(of: "約", with: "约")
+            .replacingOccurrences(of: "啟", with: "启")
+            .replacingOccurrences(of: "詩", with: "诗")
+    }
+}

@@ -68,6 +68,108 @@ enum SelfTest {
                 format: preferencesFormat
             )
 
+            try assertFormatted(
+                raw: "创世记 3:2,5,7-9",
+                expected: [
+                    "创世记 3:2 女人对蛇说",
+                    "创世记 3:5 因为神知道",
+                    "创世记 3:7 他们二人的眼睛就明亮了",
+                    "创世记 3:8 天起了凉风",
+                    "创世记 3:9 耶和华神呼唤那人"
+                ],
+                parser: parser,
+                formatter: formatter
+            )
+
+            try assertFormatted(
+                raw: "创世记 3:2、5，7-9",
+                expected: [
+                    "创世记 3:2 女人对蛇说",
+                    "创世记 3:5 因为神知道",
+                    "创世记 3:7 他们二人的眼睛就明亮了"
+                ],
+                parser: parser,
+                formatter: formatter
+            )
+
+            try assertFormatted(
+                raw: "创世记 3:24 -4:2",
+                expected: [
+                    "创世记 3:24 于是把他赶出去了",
+                    "创世记 4:1 有一日，那人和他妻子夏娃同房",
+                    "创世记 4:2 又生了该隐的兄弟亚伯"
+                ],
+                parser: parser,
+                formatter: formatter
+            )
+
+            try assertFormatted(
+                raw: "创世记第3章",
+                expected: [
+                    "创世记 3:1 耶和华神所造的",
+                    "创世记 3:24 于是把他赶出去了"
+                ],
+                parser: parser,
+                formatter: formatter
+            )
+
+            try assertFormatted(
+                raw: "约 3:16，罗 8:28",
+                expected: [
+                    "约翰福音 3:16 「神爱世人",
+                    "罗马书 8:28 我们晓得万事都互相效力"
+                ],
+                parser: parser,
+                formatter: formatter
+            )
+
+            try assertFormatted(
+                raw: "创世记 3:2-5，4:1",
+                expected: [
+                    "创世记 3:2 女人对蛇说",
+                    "创世记 3:5 因为神知道",
+                    "创世记 4:1 有一日，那人和他妻子夏娃同房"
+                ],
+                parser: parser,
+                formatter: formatter
+            )
+
+            for raw in [
+                "约三1:1到3",
+                "约三1: 1～3",
+                "约三1: 1~3",
+                "约三1:1-3",
+                "约三1:1至3",
+                "约三1:1 to 3",
+                "约三1:1to3",
+                "约三1:1——3",
+                "约三1:1--3",
+                "约三1:1...3",
+                "约三1:1^3",
+                "约三1:1……3"
+            ] {
+                try assertFormatted(
+                    raw: raw,
+                    expected: [
+                        "约翰三书 1:1 作长老的写信给亲爱的该犹",
+                        "约翰三书 1:3 有弟兄来证明你心里存的真理"
+                    ],
+                    parser: parser,
+                    formatter: formatter
+                )
+            }
+
+            try assertFormatted(
+                raw: "约三1:1\\1:2|1:3",
+                expected: [
+                    "约翰三书 1:1 作长老的写信给亲爱的该犹",
+                    "约翰三书 1:2 亲爱的兄弟啊",
+                    "约翰三书 1:3 有弟兄来证明你心里存的真理"
+                ],
+                parser: parser,
+                formatter: formatter
+            )
+
             do {
                 _ = try parser.parse("创世记 3:5-2")
                 throw TestFailure("Expected invalid range to throw")
@@ -120,6 +222,18 @@ enum SelfTest {
         }
     }
 
+    private static func assertFormatted(
+        raw: String,
+        expected: [String],
+        parser: ReferenceParser,
+        formatter: VerseFormatter
+    ) throws {
+        let actual = try formatted(raw: raw, parser: parser, formatter: formatter, format: .referenceVerseLines, labelMode: .normalizedFull)
+        for expectedFragment in expected where !actual.contains(expectedFragment) {
+            throw TestFailure("For \(raw), expected output to contain \(expectedFragment), got \(actual)")
+        }
+    }
+
     private static func formatted(
         raw: String,
         parser: ReferenceParser,
@@ -127,9 +241,9 @@ enum SelfTest {
         format: OutputFormat,
         labelMode: ReferenceLabelMode
     ) throws -> String {
-        let reference = try parser.parse(raw)
+        let reference = try parser.parseSelection(raw)
         let verses = try BibleStore.shared.verses(for: reference)
-        return formatter.format(reference: reference, verses: verses, format: format, labelMode: labelMode, originalReference: raw)
+        return formatter.format(parsedReference: reference, verses: verses, format: format, labelMode: labelMode, originalReference: raw)
     }
 }
 

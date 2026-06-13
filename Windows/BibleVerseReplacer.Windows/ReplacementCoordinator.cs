@@ -29,7 +29,7 @@ namespace BibleVerseReplacer.Windows
                     return;
                 }
 
-                VerseReference reference = parser.Parse(selectedText);
+                ParsedReference reference = parser.ParseSelection(selectedText);
                 string replacement = formatter.Format(
                     reference,
                     BibleStore.Instance.VersesFor(reference),

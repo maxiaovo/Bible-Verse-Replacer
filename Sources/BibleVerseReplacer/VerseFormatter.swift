@@ -39,7 +39,7 @@ enum ReferenceLabelMode: String, CaseIterable {
 
 final class VerseFormatter {
     func format(
-        reference: VerseReference,
+        parsedReference: ParsedReference,
         verses: [BibleVerse],
         format: OutputFormat,
         labelMode: ReferenceLabelMode = .normalizedFull,
@@ -48,23 +48,39 @@ final class VerseFormatter {
         switch format {
         case .referenceVerseLines:
             return verses.map { verse in
-                "\(reference.book.chineseName) \(verse.referenceVerseText) \(cleanText(verse.text))"
+                "\(BibleBookCatalog.chineseName(for: verse.book)) \(verse.referenceVerseText) \(cleanText(verse.text))"
             }.joined(separator: "\n")
 
         case .continuousText:
             let body = verses.map { cleanText($0.text) }.joined()
-            return applyLabelIfNeeded(reference: reference, body: body, labelMode: labelMode, originalReference: originalReference, separator: " ")
+            return applyLabelIfNeeded(label: labelText(parsedReference: parsedReference, labelMode: labelMode, originalReference: originalReference), body: body, separator: " ")
 
         case .referenceHeader:
             let body = verses.map { cleanText($0.text) }.joined(separator: "\n")
-            return "\(reference.displayText)\n\(body)"
+            return "\(parsedReference.displayText)\n\(body)"
 
         case .numberedVerses:
             let body = verses.map { verse in
                 "\(verse.verseLabel) \(cleanText(verse.text))"
             }.joined(separator: "\n")
-            return applyLabelIfNeeded(reference: reference, body: body, labelMode: labelMode, originalReference: originalReference, separator: "\n")
+            return applyLabelIfNeeded(label: labelText(parsedReference: parsedReference, labelMode: labelMode, originalReference: originalReference), body: body, separator: "\n")
         }
+    }
+
+    func format(
+        reference: VerseReference,
+        verses: [BibleVerse],
+        format: OutputFormat,
+        labelMode: ReferenceLabelMode = .normalizedFull,
+        originalReference: String? = nil
+    ) -> String {
+        self.format(
+            parsedReference: ParsedReference(passages: [PassageReference(reference: reference)]),
+            verses: verses,
+            format: format,
+            labelMode: labelMode,
+            originalReference: originalReference
+        )
     }
 
     private func cleanText(_ raw: String) -> String {
@@ -73,23 +89,17 @@ final class VerseFormatter {
             .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
-    private func applyLabelIfNeeded(
-        reference: VerseReference,
-        body: String,
-        labelMode: ReferenceLabelMode,
-        originalReference: String?,
-        separator: String
-    ) -> String {
-        guard let label = labelText(reference: reference, labelMode: labelMode, originalReference: originalReference), !label.isEmpty else {
+    private func applyLabelIfNeeded(label: String?, body: String, separator: String) -> String {
+        guard let label, !label.isEmpty else {
             return body
         }
         return "\(label)\(separator)\(body)"
     }
 
-    private func labelText(reference: VerseReference, labelMode: ReferenceLabelMode, originalReference: String?) -> String? {
+    private func labelText(parsedReference: ParsedReference, labelMode: ReferenceLabelMode, originalReference: String?) -> String? {
         switch labelMode {
         case .normalizedFull:
-            return reference.displayText
+            return parsedReference.displayText
         case .preserveInput:
             return cleanOriginalReference(originalReference)
         case .omit:

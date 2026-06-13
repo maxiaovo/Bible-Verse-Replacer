@@ -34,10 +34,10 @@ final class ReplacementCoordinator {
         }
 
         do {
-            let reference = try parser.parse(selectedText)
+            let reference = try parser.parseSelection(selectedText)
             let verses = try bibleStore.verses(for: reference)
             let replacement = formatter.format(
-                reference: reference,
+                parsedReference: reference,
                 verses: verses,
                 format: preferences.outputFormat,
                 labelMode: preferences.referenceLabelMode,

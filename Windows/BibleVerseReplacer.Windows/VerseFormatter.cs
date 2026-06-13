@@ -6,7 +6,7 @@ namespace BibleVerseReplacer.Windows
     internal sealed class VerseFormatter
     {
         public string Format(
-            VerseReference reference,
+            ParsedReference parsedReference,
             IList<BibleVerse> verses,
             OutputFormat format,
             ReferenceLabelMode labelMode,
@@ -15,14 +15,29 @@ namespace BibleVerseReplacer.Windows
             switch (format)
             {
                 case OutputFormat.ContinuousText:
-                    return ApplyLabelIfNeeded(reference, JoinContinuous(verses), labelMode, originalReference, " ");
+                    return ApplyLabelIfNeeded(parsedReference, JoinContinuous(verses), labelMode, originalReference, " ");
                 case OutputFormat.ReferenceHeader:
-                    return reference.DisplayText + "\r\n" + JoinLines(verses, false, reference);
+                    return parsedReference.DisplayText + "\r\n" + JoinLines(verses, false, null);
                 case OutputFormat.NumberedVerses:
-                    return ApplyLabelIfNeeded(reference, JoinNumbered(verses), labelMode, originalReference, "\r\n");
+                    return ApplyLabelIfNeeded(parsedReference, JoinNumbered(verses), labelMode, originalReference, "\r\n");
                 default:
-                    return JoinLines(verses, true, reference);
+                    return JoinLines(verses, true, null);
             }
+        }
+
+        public string Format(
+            VerseReference reference,
+            IList<BibleVerse> verses,
+            OutputFormat format,
+            ReferenceLabelMode labelMode,
+            string originalReference)
+        {
+            return Format(
+                new ParsedReference(new List<PassageReference> { new PassageReference(reference) }),
+                verses,
+                format,
+                labelMode,
+                originalReference);
         }
 
         private static string JoinLines(IList<BibleVerse> verses, bool includeBook, VerseReference reference)
@@ -37,7 +52,7 @@ namespace BibleVerseReplacer.Windows
                 }
                 if (includeBook)
                 {
-                    builder.Append(reference.Book.ChineseName);
+                    builder.Append(reference == null ? BibleBookCatalog.Find(verse.Book).ChineseName : reference.Book.ChineseName);
                     builder.Append(' ');
                     builder.Append(verse.ReferenceVerseText);
                     builder.Append(' ');
@@ -80,13 +95,13 @@ namespace BibleVerseReplacer.Windows
         }
 
         private static string ApplyLabelIfNeeded(
-            VerseReference reference,
+            ParsedReference parsedReference,
             string body,
             ReferenceLabelMode labelMode,
             string originalReference,
             string separator)
         {
-            string label = LabelText(reference, labelMode, originalReference);
+            string label = LabelText(parsedReference, labelMode, originalReference);
             if (string.IsNullOrEmpty(label))
             {
                 return body;
@@ -94,7 +109,7 @@ namespace BibleVerseReplacer.Windows
             return label + separator + body;
         }
 
-        private static string LabelText(VerseReference reference, ReferenceLabelMode labelMode, string originalReference)
+        private static string LabelText(ParsedReference parsedReference, ReferenceLabelMode labelMode, string originalReference)
         {
             switch (labelMode)
             {
@@ -103,7 +118,7 @@ namespace BibleVerseReplacer.Windows
                 case ReferenceLabelMode.Omit:
                     return null;
                 default:
-                    return reference.DisplayText;
+                    return parsedReference.DisplayText;
             }
         }
 

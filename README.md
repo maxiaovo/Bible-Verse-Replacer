@@ -21,12 +21,12 @@ Bible Verse Replacer 是一个常驻 macOS 菜单栏的小工具。它适合写�
 
 ## 下载
 
-请到 [Releases](https://github.com/maxiaovo/Bible-Verse-Replacer/releases) 下载最新版本的 `BibleVerseReplacer-v0.1.1.zip`。
+请到 [Releases](https://github.com/maxiaovo/Bible-Verse-Replacer/releases) 下载最新版本的 `BibleVerseReplacer-v0.1.2.zip`。
 
 当前版本是早期预览版：
 
-- macOS：下载 `BibleVerseReplacer-v0.1.1.zip`，支持 macOS 13 Ventura 及以上。
-- Windows：下载 `BibleVerseReplacer-Windows-v0.1.1.zip`，支持 Windows 7 SP1 及以上，需要 .NET Framework 4.8。
+- macOS：下载 `BibleVerseReplacer-v0.1.2.zip`，支持 macOS 13 Ventura 及以上。
+- Windows：下载 `BibleVerseReplacer-Windows-v0.1.2.zip`，支持 Windows 7 SP1 及以上，需要 .NET Framework 4.8。
 - 当前成品尚未做 Apple notarization 公证或 Windows 代码签名。
 - 如果 macOS 提示无法打开，请在 Finder 中右键 App，选择“打开”，再确认打开。
 
@@ -34,7 +34,7 @@ Bible Verse Replacer 是一个常驻 macOS 菜单栏的小工具。它适合写�
 
 ### macOS
 
-1. 下载并解压 `BibleVerseReplacer-v0.1.1.zip`。
+1. 下载并解压 `BibleVerseReplacer-v0.1.2.zip`。
 2. 打开 `BibleVerseReplacer.app`，菜单栏会出现一个「经」字图标。
 3. 按提示授予“辅助功能”权限。这个权限用于模拟复制和粘贴。
 4. 在任意 App 中选中经文引用，比如 `创世记 1:1`。
@@ -45,7 +45,7 @@ Bible Verse Replacer 是一个常驻 macOS 菜单栏的小工具。它适合写�
 ### Windows
 
 1. 确认系统是 Windows 7 SP1 或更新版本，并已安装 [.NET Framework 4.8](https://support.microsoft.com/topic/microsoft-net-framework-4-8-offline-installer-for-windows-9d23f658-3b97-68ab-d013-aa3c3e7495e0)。
-2. 下载并解压 `BibleVerseReplacer-Windows-v0.1.1.zip`。
+2. 下载并解压 `BibleVerseReplacer-Windows-v0.1.2.zip`。
 3. 运行 `BibleVerseReplacer.exe`，系统托盘会出现应用图标。
 4. 在任意 App 中选中经文引用，比如 `创世记 1:1`。
 5. 按默认快捷键 `Ctrl + Alt + Win + B`。
@@ -54,16 +54,18 @@ Windows 版可以在托盘菜单里打开设置窗口，修改快捷键、输出
 
 ## 支持的引用
 
-第一版专注支持单段引用：
+支持单段、组合、跨章、整章和多处经文：
 
 ```text
 创世记 3:2
 创世记 3:2-5
-创世记3:2-5
-创 3:2-5
-创3：2-5
-Genesis 3:2-5
-Gen 3:2-5
+创世记 3:2,5,7-9
+创世记 3:2、5，7-9
+创世记 3:2-4:3
+创世记第3章
+约 3:16，罗 8:28
+创世记 3:2-5，4:1
+Genesis 3:2-5, 4:1
 ```
 
 兼容：
@@ -72,14 +74,25 @@ Gen 3:2-5
 - 英文书卷名和常见缩写。
 - 全角/半角冒号：`：` / `:`
 - 全角/半角数字：`３` / `3`
-- 常见范围符号：`-`、`－`、`–`、`—`、`至`
+- 分隔符：`,`、`，`、`、`、`;`、`；`、`|`、`｜`、`\`
+- 范围符号：`-`、`－`、`–`、`—`、`——`、`--`、`～`、`~`、`至`、`到`、`to`、`...`、`……`、`^`
 
-暂不支持：
+示例：
 
-- 跨章范围：`创世记 3:20-4:3`
-- 多段组合：`创世记 3:2,5,7-9`
-- 多处经文：`约 3:16; 罗 8:28`
-- 只写整章：`创世记 3`
+```text
+约三1:1到3
+约三1: 1～3
+约三1:1to3
+约三1:1...3
+约三1:1\1:2|1:3
+```
+
+暂不支持中文数字和半节写法，例如：
+
+```text
+创世记三章二节
+约 3:16上
+```
 
 ## 设置
 
@@ -168,7 +181,6 @@ msbuild BibleVerseReplacer.sln /restore /p:Configuration=Release /p:Platform="An
 
 ## 路线图
 
-- 支持跨章范围和多段经文。
 - 支持更多中文圣经版本。
 - 增加自定义输出模板。
 - 增加正式签名、公证和安装包。
