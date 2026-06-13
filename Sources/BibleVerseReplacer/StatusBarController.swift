@@ -57,6 +57,14 @@ final class StatusBarController: NSObject {
         authorItem.isEnabled = false
         menu.addItem(authorItem)
 
+        let versionItem = NSMenuItem(title: "版本：\(AppInfo.versionDisplay)", action: nil, keyEquivalent: "")
+        versionItem.isEnabled = false
+        menu.addItem(versionItem)
+
+        let repoItem = NSMenuItem(title: "仓库：\(AppInfo.repositoryURLString)", action: #selector(openRepository), keyEquivalent: "")
+        repoItem.target = self
+        menu.addItem(repoItem)
+
         menu.addItem(.separator())
 
         let settingsItem = NSMenuItem(title: "设置...", action: #selector(openSettings), keyEquivalent: ",")
@@ -103,6 +111,10 @@ final class StatusBarController: NSObject {
         if let url = URL(string: "https://ebible.org/Scriptures/details.php?id=cmn-cu89s") {
             NSWorkspace.shared.open(url)
         }
+    }
+
+    @objc private func openRepository() {
+        NSWorkspace.shared.open(AppInfo.repositoryURL)
     }
 
     @objc private func checkUpdates() {

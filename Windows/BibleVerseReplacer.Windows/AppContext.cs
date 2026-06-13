@@ -13,6 +13,7 @@ namespace BibleVerseReplacer.Windows
         private readonly UpdateChecker updateChecker = new UpdateChecker();
         private readonly Timer startupUpdateTimer = new Timer();
         private SettingsForm settingsForm;
+        private UpdateInstaller updateInstaller;
         private bool checkingUpdates;
 
         public TrayAppContext()
@@ -55,6 +56,8 @@ namespace BibleVerseReplacer.Windows
             menu.Items.Add("替换所选经文", null, delegate { replacementCoordinator.ReplaceSelection(); });
             menu.Items.Add("当前快捷键：" + UserPreferences.Instance.Shortcut.DisplayText).Enabled = false;
             menu.Items.Add("作者：大侠请留步").Enabled = false;
+            menu.Items.Add("版本：" + AppInfo.VersionDisplay).Enabled = false;
+            menu.Items.Add("仓库：" + AppInfo.RepositoryUrl, null, delegate { Process.Start(AppInfo.RepositoryUrl); });
             menu.Items.Add(new ToolStripSeparator());
             menu.Items.Add("设置...", null, delegate { ShowSettings(); });
             menu.Items.Add("经文库：" + BibleStore.Instance.SourceSummary).Enabled = false;
@@ -152,14 +155,32 @@ namespace BibleVerseReplacer.Windows
 
             if (result.IsUpdateAvailable)
             {
+                if (string.IsNullOrEmpty(result.InstallerAssetUrl))
+                {
+                    DialogResult openRelease = MessageBox.Show(
+                        "发现新版本 v" + result.LatestVersion + "\n当前版本：v" + result.CurrentVersion + "\n\n没有找到可自动安装的 Windows 安装包，是否打开下载页面？",
+                        "Bible Verse Replacer",
+                        MessageBoxButtons.YesNo,
+                        MessageBoxIcon.Information);
+                    if (openRelease == DialogResult.Yes)
+                    {
+                        Process.Start(result.ReleaseUrl);
+                    }
+                    return;
+                }
+
                 DialogResult answer = MessageBox.Show(
-                    "发现新版本 v" + result.LatestVersion + "\n当前版本：v" + result.CurrentVersion + "\n\n是否打开下载页面？",
+                    "发现新版本 v" + result.LatestVersion + "\n当前版本：v" + result.CurrentVersion + "\n\n是否下载并自动安装？安装完成后会自动重启程序。",
                     "Bible Verse Replacer",
                     MessageBoxButtons.YesNo,
                     MessageBoxIcon.Information);
                 if (answer == DialogResult.Yes)
                 {
-                    Process.Start(result.ReleaseUrl);
+                    updateInstaller = new UpdateInstaller(
+                        result.InstallerAssetUrl,
+                        result.LatestVersion,
+                        delegate { ExitThread(); });
+                    updateInstaller.Start(null);
                 }
                 return;
             }

@@ -45,6 +45,39 @@ enum SelfTest {
             )
 
             try assertFormatted(
+                raw: "创世纪 1:1",
+                expected: "创世记 1:1 起初，神创造天地。",
+                parser: parser,
+                formatter: formatter,
+                format: .continuousText,
+                labelMode: .normalizedFull
+            )
+
+            try assertFormatted(
+                raw: "马可 5:8",
+                expectedPrefix: "马可福音 5:8 是因耶稣曾吩咐他说",
+                parser: parser,
+                formatter: formatter,
+                format: .referenceVerseLines
+            )
+
+            try assertFormatted(
+                raw: "陆家 2:10",
+                expectedPrefix: "路加福音 2:10 那天使对他们说",
+                parser: parser,
+                formatter: formatter,
+                format: .referenceVerseLines
+            )
+
+            try assertFormatted(
+                raw: "约翰 3:16",
+                expectedPrefix: "约翰福音 3:16 「神爱世人",
+                parser: parser,
+                formatter: formatter,
+                format: .referenceVerseLines
+            )
+
+            try assertFormatted(
                 raw: "创1:1-3，7",
                 expected: "创世记 1:1-3,7 起初，神创造天地。地是空虚混沌，渊面黑暗；神的灵运行在水面上。神说：「要有光」，就有了光。……神就造出空气，将空气以下的水、空气以上的水分开了。事就这样成了。",
                 parser: parser,

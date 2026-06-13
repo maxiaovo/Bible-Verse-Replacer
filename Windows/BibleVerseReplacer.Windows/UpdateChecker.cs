@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Net;
-using System.Reflection;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 using System.Threading.Tasks;
@@ -13,6 +12,7 @@ namespace BibleVerseReplacer.Windows
         public string CurrentVersion { get; set; }
         public string LatestVersion { get; set; }
         public string ReleaseUrl { get; set; }
+        public string InstallerAssetUrl { get; set; }
         public bool IsUpdateAvailable { get; set; }
         public Exception Error { get; set; }
     }
@@ -29,7 +29,7 @@ namespace BibleVerseReplacer.Windows
                 {
                     callback(new UpdateCheckResult
                     {
-                        CurrentVersion = CurrentVersion,
+                        CurrentVersion = AppInfo.Version,
                         Error = task.Exception == null ? null : task.Exception.GetBaseException()
                     });
                     return;
@@ -54,25 +54,36 @@ namespace BibleVerseReplacer.Windows
                 DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(GitHubRelease));
                 GitHubRelease release = (GitHubRelease)serializer.ReadObject(stream);
 
-                string current = CurrentVersion;
+                string current = AppInfo.Version;
                 string latest = NormalizeVersion(release.TagName);
+                string installerAssetUrl = FindInstallerAssetUrl(release, latest);
                 return new UpdateCheckResult
                 {
                     CurrentVersion = current,
                     LatestVersion = latest,
                     ReleaseUrl = release.HtmlUrl,
+                    InstallerAssetUrl = installerAssetUrl,
                     IsUpdateAvailable = CompareVersions(latest, current) > 0
                 };
             }
         }
 
-        private static string CurrentVersion
+        private static string FindInstallerAssetUrl(GitHubRelease release, string version)
         {
-            get
+            string expectedName = "BibleVerseReplacer-Windows-v" + version + ".zip";
+            if (release.Assets == null)
             {
-                Version version = Assembly.GetExecutingAssembly().GetName().Version;
-                return version.Major + "." + version.Minor + "." + version.Build;
+                return null;
             }
+
+            foreach (GitHubAsset asset in release.Assets)
+            {
+                if (string.Equals(asset.Name, expectedName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return asset.DownloadUrl;
+                }
+            }
+            return null;
         }
 
         private static string NormalizeVersion(string value)
@@ -120,6 +131,19 @@ namespace BibleVerseReplacer.Windows
 
             [DataMember(Name = "html_url")]
             public string HtmlUrl { get; set; }
+
+            [DataMember(Name = "assets")]
+            public GitHubAsset[] Assets { get; set; }
+        }
+
+        [DataContract]
+        private sealed class GitHubAsset
+        {
+            [DataMember(Name = "name")]
+            public string Name { get; set; }
+
+            [DataMember(Name = "browser_download_url")]
+            public string DownloadUrl { get; set; }
         }
     }
 }

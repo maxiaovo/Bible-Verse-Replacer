@@ -8,7 +8,7 @@ struct BibleBook: Equatable {
 
 enum BibleBookCatalog {
     static let books: [BibleBook] = [
-        BibleBook(code: "GEN", chineseName: "创世记", aliases: ["创世记", "创", "Genesis", "Gen", "Ge", "Gn"]),
+        BibleBook(code: "GEN", chineseName: "创世记", aliases: ["创世记", "创世纪", "创", "Genesis", "Gen", "Ge", "Gn"]),
         BibleBook(code: "EXO", chineseName: "出埃及记", aliases: ["出埃及记", "出", "Exodus", "Exod", "Exo", "Ex"]),
         BibleBook(code: "LEV", chineseName: "利未记", aliases: ["利未记", "利", "Leviticus", "Lev", "Le"]),
         BibleBook(code: "NUM", chineseName: "民数记", aliases: ["民数记", "民", "Numbers", "Num", "Nu", "Nm", "Nb"]),
@@ -47,10 +47,10 @@ enum BibleBookCatalog {
         BibleBook(code: "HAG", chineseName: "哈该书", aliases: ["哈该书", "该", "Haggai", "Hag"]),
         BibleBook(code: "ZEC", chineseName: "撒迦利亚书", aliases: ["撒迦利亚书", "亚", "Zechariah", "Zech", "Zec"]),
         BibleBook(code: "MAL", chineseName: "玛拉基书", aliases: ["玛拉基书", "玛", "Malachi", "Mal"]),
-        BibleBook(code: "MAT", chineseName: "马太福音", aliases: ["马太福音", "太", "Matthew", "Matt", "Mat", "Mt"]),
-        BibleBook(code: "MRK", chineseName: "马可福音", aliases: ["马可福音", "可", "Mark", "Mrk", "Mk"]),
-        BibleBook(code: "LUK", chineseName: "路加福音", aliases: ["路加福音", "路", "Luke", "Luk", "Lk"]),
-        BibleBook(code: "JHN", chineseName: "约翰福音", aliases: ["约翰福音", "约", "John", "Jhn", "Jn"]),
+        BibleBook(code: "MAT", chineseName: "马太福音", aliases: ["马太福音", "马太", "太", "Matthew", "Matt", "Mat", "Mt"]),
+        BibleBook(code: "MRK", chineseName: "马可福音", aliases: ["马可福音", "马可", "可", "Mark", "Mrk", "Mk"]),
+        BibleBook(code: "LUK", chineseName: "路加福音", aliases: ["路加福音", "路加", "陆家", "路", "Luke", "Luk", "Lk"]),
+        BibleBook(code: "JHN", chineseName: "约翰福音", aliases: ["约翰福音", "约翰", "约", "John", "Jhn", "Jn"]),
         BibleBook(code: "ACT", chineseName: "使徒行传", aliases: ["使徒行传", "徒", "Acts", "Act", "Ac"]),
         BibleBook(code: "ROM", chineseName: "罗马书", aliases: ["罗马书", "罗", "Romans", "Rom", "Ro"]),
         BibleBook(code: "1CO", chineseName: "哥林多前书", aliases: ["哥林多前书", "林前", "1 Corinthians", "1Corinthians", "1 Cor", "1Cor", "I Corinthians", "ICorinthians"]),
@@ -132,6 +132,8 @@ enum BibleBookCatalog {
             .replacingOccurrences(of: "約", with: "约")
             .replacingOccurrences(of: "啟", with: "启")
             .replacingOccurrences(of: "詩", with: "诗")
+            .replacingOccurrences(of: "陸", with: "陆")
+            .replacingOccurrences(of: "創", with: "创")
     }
 
     private static func normalizeForBookStart(_ raw: String) -> String {
@@ -147,5 +149,7 @@ enum BibleBookCatalog {
             .replacingOccurrences(of: "約", with: "约")
             .replacingOccurrences(of: "啟", with: "启")
             .replacingOccurrences(of: "詩", with: "诗")
+            .replacingOccurrences(of: "陸", with: "陆")
+            .replacingOccurrences(of: "創", with: "创")
     }
 }

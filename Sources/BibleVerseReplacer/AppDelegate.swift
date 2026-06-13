@@ -8,6 +8,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let hotKeyManager = HotKeyManager()
     private let updateChecker = UpdateChecker()
     private var isCheckingUpdates = false
+    private var updateInstaller: UpdateInstaller?
 
     private lazy var replacementCoordinator = ReplacementCoordinator(
         bibleStore: bibleStore,
@@ -112,14 +113,36 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func handleUpdateCheck(_ result: UpdateCheckResult, interactive: Bool) {
         if result.isUpdateAvailable {
-            let openRelease = notifier.alert(
+            guard let installerAssetURL = result.installerAssetURL else {
+                let openRelease = notifier.alert(
+                    title: "发现新版本 v\(result.latestVersion)",
+                    message: "当前版本：v\(result.currentVersion)\n没有找到可自动安装的 macOS 安装包，是否打开下载页面？",
+                    primaryButton: "打开下载",
+                    secondaryButton: "稍后"
+                )
+                if openRelease {
+                    NSWorkspace.shared.open(result.releaseURL)
+                }
+                return
+            }
+
+            let shouldInstall = notifier.alert(
                 title: "发现新版本 v\(result.latestVersion)",
-                message: "当前版本：v\(result.currentVersion)\n是否打开下载页面？",
-                primaryButton: "打开下载",
+                message: "当前版本：v\(result.currentVersion)\n是否下载并自动安装？安装完成后会自动重启程序。",
+                primaryButton: "下载并安装",
                 secondaryButton: "稍后"
             )
-            if openRelease {
-                NSWorkspace.shared.open(result.releaseURL)
+            if shouldInstall {
+                let installer = UpdateInstaller(
+                    downloadURL: installerAssetURL,
+                    latestVersion: result.latestVersion,
+                    notifier: notifier
+                ) { [weak self] in
+                    self?.updateInstaller = nil
+                    NSApp.terminate(nil)
+                }
+                updateInstaller = installer
+                installer.start()
             }
             return
         }
@@ -150,7 +173,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             return
         }
 
-        PermissionManager.requestAccessibilityPrompt()
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
             guard let self, !PermissionManager.isAccessibilityTrusted else {
                 return

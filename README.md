@@ -23,12 +23,12 @@ Bible Verse Replacer 是一个常驻 macOS 菜单栏的小工具。它适合写�
 
 ## 下载
 
-请到 [Releases](https://github.com/maxiaovo/Bible-Verse-Replacer/releases) 下载最新版本的 `BibleVerseReplacer-v0.1.6.zip`。
+请到 [Releases](https://github.com/maxiaovo/Bible-Verse-Replacer/releases) 下载最新版本的 `BibleVerseReplacer-v0.1.7.zip`。
 
 当前版本是早期预览版：
 
-- macOS：下载 `BibleVerseReplacer-v0.1.6.zip`，支持 macOS 13 Ventura 及以上。
-- Windows：下载 `BibleVerseReplacer-Windows-v0.1.6.zip`，支持 Windows 7 SP1 及以上，需要 .NET Framework 4.8。
+- macOS：下载 `BibleVerseReplacer-v0.1.7.zip`，支持 macOS 13 Ventura 及以上。
+- Windows：下载 `BibleVerseReplacer-Windows-v0.1.7.zip`，支持 Windows 7 SP1 及以上，需要 .NET Framework 4.8。
 - 当前成品尚未做 Apple notarization 公证或 Windows 代码签名。
 - 如果 macOS 提示无法打开，请在 Finder 中右键 App，选择“打开”，再确认打开。
 
@@ -36,7 +36,7 @@ Bible Verse Replacer 是一个常驻 macOS 菜单栏的小工具。它适合写�
 
 ### macOS
 
-1. 下载并解压 `BibleVerseReplacer-v0.1.6.zip`。
+1. 下载并解压 `BibleVerseReplacer-v0.1.7.zip`。
 2. 打开 `BibleVerseReplacer.app`，菜单栏会出现一个「经」字图标。
 3. 按提示授予“辅助功能”权限。这个权限用于模拟复制和粘贴。
 4. 在任意 App 中选中经文引用，比如 `创世记 1:1`。
@@ -45,10 +45,12 @@ Bible Verse Replacer 是一个常驻 macOS 菜单栏的小工具。它适合写�
 如果权限没有打开，可以点击菜单栏「经」图标，进入设置或打开辅助功能设置。
 菜单栏里的辅助功能权限状态会在每次打开菜单时重新读取系统状态。
 
+从 v0.1.7 开始，启动时不会反复弹出 macOS 的辅助功能授权请求。macOS 对未公证 App 的辅助功能授权有时会受 App 路径、签名和替换方式影响：如果你覆盖安装后系统设置里开关还在，但替换不生效，先在辅助功能列表里移除旧条目，再重新添加当前 `BibleVerseReplacer.app`。正式签名和公证会在后续版本继续补上。
+
 ### Windows
 
 1. 确认系统是 Windows 7 SP1 或更新版本，并已安装 [.NET Framework 4.8](https://support.microsoft.com/topic/microsoft-net-framework-4-8-offline-installer-for-windows-9d23f658-3b97-68ab-d013-aa3c3e7495e0)。
-2. 下载并解压 `BibleVerseReplacer-Windows-v0.1.6.zip`。
+2. 下载并解压 `BibleVerseReplacer-Windows-v0.1.7.zip`。
 3. 运行 `BibleVerseReplacer.exe`，系统托盘会出现应用图标。
 4. 在任意 App 中选中经文引用，比如 `创世记 1:1`。
 5. 按默认快捷键 `Ctrl + Alt + Win + B`。
@@ -69,11 +71,15 @@ Windows 版可以在托盘菜单里打开设置窗口，修改快捷键、输出
 约 3:16，罗 8:28
 创世记 3:2-5，4:1
 Genesis 3:2-5, 4:1
+马可 5:8
+陆家 2:10
 ```
 
 兼容：
 
 - 中文书卷名和常见简称。
+- 四福音短写：`马太`、`马可`、`路加`、`约翰`。
+- 常见误写：`创世纪` 会识别为 `创世记`，`陆家` 会识别为 `路加`。
 - 英文书卷名和常见缩写。
 - 全角/半角冒号：`：` / `:`
 - 全角/半角数字：`３` / `3`
@@ -116,17 +122,18 @@ Genesis 3:2-5, 4:1
   - 按片段分行，例如 `创世记 1:1-3` 和 `创世记 1:7` 各占一行
 - 自动检查更新：
   - 默认开启，启动后会自动检查 GitHub 最新 Release
-  - 如果发现新版本，会提示是否打开下载页面
+  - 如果发现新版本，会提示下载并自动安装
+  - 自动安装会显示下载进度，替换完成后自动重启程序
   - 也可以在菜单栏或托盘菜单里手动点击“检查更新”
 - 查看辅助功能权限状态。
 - 开启或关闭开机自启动。
-- 查看经文库来源。
+- 查看版本号、GitHub 仓库地址和经文库来源。
 
 ## 离线与隐私
 
 Bible Verse Replacer 的经文替换不需要联网。经文库已经离线内置在 App 里。
 
-如果开启自动检查更新，App 启动后会请求 GitHub Releases 获取最新版本号；关闭该选项后不会自动联网检查更新。手动点击“检查更新”时也会访问 GitHub Releases。
+如果开启自动检查更新，App 启动后会请求 GitHub Releases 获取最新版本号；发现新版本并确认安装后，会下载对应平台的 Release zip。关闭该选项后不会自动联网检查更新。手动点击“检查更新”时也会访问 GitHub Releases。
 
 为了跨 App 替换选中文字，它会使用剪贴板作为中转：
 

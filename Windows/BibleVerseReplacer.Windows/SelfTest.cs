@@ -16,6 +16,10 @@ namespace BibleVerseReplacer.Windows
                 AssertFormatted(parser, formatter, "创 1:1", OutputFormat.ContinuousText, ReferenceLabelMode.NormalizedFull, "创世记 1:1 起初，神创造天地。", false);
                 AssertFormatted(parser, formatter, "创 1:1", OutputFormat.ContinuousText, ReferenceLabelMode.PreserveInput, "创 1:1 起初，神创造天地。", false);
                 AssertFormatted(parser, formatter, "创 1:1", OutputFormat.ContinuousText, ReferenceLabelMode.Omit, "起初，神创造天地。", false);
+                AssertFormatted(parser, formatter, "创世纪 1:1", OutputFormat.ContinuousText, ReferenceLabelMode.NormalizedFull, "创世记 1:1 起初，神创造天地。", false);
+                AssertFormatted(parser, formatter, "马可 5:8", OutputFormat.ReferenceVerseLines, ReferenceLabelMode.NormalizedFull, "马可福音 5:8 是因耶稣曾吩咐他说", true);
+                AssertFormatted(parser, formatter, "陆家 2:10", OutputFormat.ReferenceVerseLines, ReferenceLabelMode.NormalizedFull, "路加福音 2:10 那天使对他们说", true);
+                AssertFormatted(parser, formatter, "约翰 3:16", OutputFormat.ReferenceVerseLines, ReferenceLabelMode.NormalizedFull, "约翰福音 3:16 「神爱世人", true);
                 AssertFormatted(parser, formatter, "创1:1-3，7", OutputFormat.ContinuousText, ReferenceLabelMode.NormalizedFull, CombinedPassageMode.CompactEllipsis, "创世记 1:1-3,7 起初，神创造天地。地是空虚混沌，渊面黑暗；神的灵运行在水面上。神说：「要有光」，就有了光。……神就造出空气，将空气以下的水、空气以上的水分开了。事就这样成了。", false);
                 AssertFormatted(parser, formatter, "创1:1-3，7", OutputFormat.ContinuousText, ReferenceLabelMode.NormalizedFull, CombinedPassageMode.GroupedLines, "创世记 1:1-3 起初，神创造天地。地是空虚混沌，渊面黑暗；神的灵运行在水面上。神说：「要有光」，就有了光。\r\n创世记 1:7 神就造出空气，将空气以下的水、空气以上的水分开了。事就这样成了。", false);
                 AssertFormatted(parser, formatter, "创3：2－5", OutputFormat.ReferenceVerseLines, ReferenceLabelMode.NormalizedFull, "创世记 3:2 女人对蛇说", true);

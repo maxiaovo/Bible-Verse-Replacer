@@ -7,7 +7,7 @@ namespace BibleVerseReplacer.Windows
     {
         public static readonly BibleBook[] Books =
         {
-            new BibleBook("GEN", "创世记", "创", "Genesis", "Gen", "Ge", "Gn"),
+            new BibleBook("GEN", "创世记", "创世纪", "创", "Genesis", "Gen", "Ge", "Gn"),
             new BibleBook("EXO", "出埃及记", "出", "Exodus", "Exod", "Exo", "Ex"),
             new BibleBook("LEV", "利未记", "利", "Leviticus", "Lev", "Le"),
             new BibleBook("NUM", "民数记", "民", "Numbers", "Num", "Nu", "Nm", "Nb"),
@@ -46,10 +46,10 @@ namespace BibleVerseReplacer.Windows
             new BibleBook("HAG", "哈该书", "该", "Haggai", "Hag"),
             new BibleBook("ZEC", "撒迦利亚书", "亚", "Zechariah", "Zech", "Zec"),
             new BibleBook("MAL", "玛拉基书", "玛", "Malachi", "Mal"),
-            new BibleBook("MAT", "马太福音", "太", "Matthew", "Matt", "Mat", "Mt"),
-            new BibleBook("MRK", "马可福音", "可", "Mark", "Mrk", "Mk"),
-            new BibleBook("LUK", "路加福音", "路", "Luke", "Luk", "Lk"),
-            new BibleBook("JHN", "约翰福音", "约", "John", "Jhn", "Jn"),
+            new BibleBook("MAT", "马太福音", "马太", "太", "Matthew", "Matt", "Mat", "Mt"),
+            new BibleBook("MRK", "马可福音", "马可", "可", "Mark", "Mrk", "Mk"),
+            new BibleBook("LUK", "路加福音", "路加", "陆家", "路", "Luke", "Luk", "Lk"),
+            new BibleBook("JHN", "约翰福音", "约翰", "约", "John", "Jhn", "Jn"),
             new BibleBook("ACT", "使徒行传", "徒", "Acts", "Act", "Ac"),
             new BibleBook("ROM", "罗马书", "罗", "Romans", "Rom", "Ro"),
             new BibleBook("1CO", "哥林多前书", "林前", "1 Corinthians", "1Corinthians", "1 Cor", "1Cor", "I Corinthians", "ICorinthians"),
@@ -147,7 +147,9 @@ namespace BibleVerseReplacer.Windows
                 .Replace("記", "记")
                 .Replace("約", "约")
                 .Replace("啟", "启")
-                .Replace("詩", "诗");
+                .Replace("詩", "诗")
+                .Replace("陸", "陆")
+                .Replace("創", "创");
         }
 
         private static string NormalizeForBookStart(string raw)
@@ -163,7 +165,9 @@ namespace BibleVerseReplacer.Windows
                 .Replace("記", "记")
                 .Replace("約", "约")
                 .Replace("啟", "启")
-                .Replace("詩", "诗");
+                .Replace("詩", "诗")
+                .Replace("陸", "陆")
+                .Replace("創", "创");
         }
     }
 }

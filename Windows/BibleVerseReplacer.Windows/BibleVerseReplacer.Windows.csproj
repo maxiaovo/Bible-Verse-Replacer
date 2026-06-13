@@ -40,6 +40,8 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
@@ -47,6 +49,7 @@
   <ItemGroup>
     <Compile Include="AppContext.cs" />
     <Compile Include="AppIcons.cs" />
+    <Compile Include="AppInfo.cs" />
     <Compile Include="BibleBookCatalog.cs" />
     <Compile Include="BibleModels.cs" />
     <Compile Include="BibleStore.cs" />
@@ -60,6 +63,7 @@
     <Compile Include="SettingsForm.cs" />
     <Compile Include="StartupManager.cs" />
     <Compile Include="UpdateChecker.cs" />
+    <Compile Include="UpdateInstaller.cs" />
     <Compile Include="UserPreferences.cs" />
     <Compile Include="VerseFormatter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

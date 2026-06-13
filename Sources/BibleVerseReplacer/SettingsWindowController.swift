@@ -15,6 +15,7 @@ final class SettingsWindowController: NSWindowController {
     private let loginItemCheckbox = NSButton(checkboxWithTitle: "开机自启动", target: nil, action: nil)
     private let loginStatusLabel = NSTextField(labelWithString: "")
     private let bibleInfoLabel = NSTextField(labelWithString: "")
+    private let versionInfoLabel = NSTextField(labelWithString: "")
 
     init(
         preferences: UserPreferences = .shared,
@@ -27,7 +28,7 @@ final class SettingsWindowController: NSWindowController {
         self.shortcutButton = ShortcutRecorderButton(shortcut: preferences.shortcut)
 
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 540, height: 500),
+            contentRect: NSRect(x: 0, y: 0, width: 640, height: 560),
             styleMask: [.titled, .closable, .miniaturizable],
             backing: .buffered,
             defer: false
@@ -63,6 +64,7 @@ final class SettingsWindowController: NSWindowController {
         loginItemCheckbox.state = LoginItemManager.isEnabled ? .on : .off
         loginStatusLabel.stringValue = "开机启动：\(LoginItemManager.statusText)"
         bibleInfoLabel.stringValue = "经文库：\(bibleStore.sourceSummary)"
+        versionInfoLabel.stringValue = "版本：\(AppInfo.versionDisplay)"
     }
 
     private func setupContent() {
@@ -115,6 +117,9 @@ final class SettingsWindowController: NSWindowController {
         let sourceButton = NSButton(title: "打开 eBible 来源页面", target: self, action: #selector(openSourcePage))
         sourceButton.bezelStyle = .rounded
 
+        let repositoryButton = NSButton(title: "打开 GitHub 仓库", target: self, action: #selector(openRepository))
+        repositoryButton.bezelStyle = .rounded
+
         root.addArrangedSubview(titleLabel)
         root.addArrangedSubview(subtitleLabel)
         root.addArrangedSubview(authorLabel)
@@ -129,6 +134,10 @@ final class SettingsWindowController: NSWindowController {
         root.addArrangedSubview(row(label: "更新", view: autoUpdateCheckbox))
         root.addArrangedSubview(row(label: "启动", view: loginItemCheckbox))
         root.addArrangedSubview(loginStatusLabel)
+        root.addArrangedSubview(separator())
+        root.addArrangedSubview(versionInfoLabel)
+        root.addArrangedSubview(row(label: "仓库", view: repositoryLinkLabel()))
+        root.addArrangedSubview(repositoryButton)
         root.addArrangedSubview(separator())
         root.addArrangedSubview(bibleInfoLabel)
         root.addArrangedSubview(sourceButton)
@@ -145,6 +154,13 @@ final class SettingsWindowController: NSWindowController {
             referenceLabelPopup.widthAnchor.constraint(greaterThanOrEqualToConstant: 220),
             combinedPassagePopup.widthAnchor.constraint(greaterThanOrEqualToConstant: 220)
         ])
+    }
+
+    private func repositoryLinkLabel() -> NSTextField {
+        let label = NSTextField(labelWithString: AppInfo.repositoryURLString)
+        label.textColor = .secondaryLabelColor
+        label.font = .monospacedSystemFont(ofSize: 12, weight: .regular)
+        return label
     }
 
     private func row(label: String, view: NSView) -> NSView {
@@ -244,5 +260,9 @@ final class SettingsWindowController: NSWindowController {
         if let url = URL(string: "https://ebible.org/Scriptures/details.php?id=cmn-cu89s") {
             NSWorkspace.shared.open(url)
         }
+    }
+
+    @objc private func openRepository() {
+        NSWorkspace.shared.open(AppInfo.repositoryURL)
     }
 }

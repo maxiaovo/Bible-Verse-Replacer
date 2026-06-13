@@ -4,17 +4,30 @@ struct UpdateCheckResult {
     let currentVersion: String
     let latestVersion: String
     let releaseURL: URL
+    let installerAssetURL: URL?
     let isUpdateAvailable: Bool
 }
 
 final class UpdateChecker {
+    private struct GitHubAsset: Decodable {
+        let name: String
+        let downloadURL: URL
+
+        enum CodingKeys: String, CodingKey {
+            case name
+            case downloadURL = "browser_download_url"
+        }
+    }
+
     private struct GitHubRelease: Decodable {
         let tagName: String
         let htmlURL: URL
+        let assets: [GitHubAsset]
 
         enum CodingKeys: String, CodingKey {
             case tagName = "tag_name"
             case htmlURL = "html_url"
+            case assets
         }
     }
 
@@ -50,10 +63,14 @@ final class UpdateChecker {
                 let release = try JSONDecoder().decode(GitHubRelease.self, from: data)
                 let current = Self.currentVersion
                 let latest = Self.normalizedVersion(release.tagName)
+                let installerAssetURL = release.assets.first { asset in
+                    asset.name == "BibleVerseReplacer-v\(latest).zip"
+                }?.downloadURL
                 completion(.success(UpdateCheckResult(
                     currentVersion: current,
                     latestVersion: latest,
                     releaseURL: release.htmlURL,
+                    installerAssetURL: installerAssetURL,
                     isUpdateAvailable: Self.compareVersions(latest, current) == .orderedDescending
                 )))
             } catch {
@@ -63,7 +80,7 @@ final class UpdateChecker {
     }
 
     static var currentVersion: String {
-        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0.0.0"
+        AppInfo.version
     }
 
     private static func normalizedVersion(_ raw: String) -> String {
