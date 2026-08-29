@@ -4,7 +4,7 @@ Bible Verse Replacer 是一个常驻后台的小工具。写文章、讲章、�
 
 作者：大侠请留步
 
-当前版本：v0.1.12
+当前版本：v0.1.13
 
 [English](#english)
 
@@ -12,8 +12,8 @@ Bible Verse Replacer 是一个常驻后台的小工具。写文章、讲章、�
 
 到 [Releases](https://github.com/maxiaovo/Bible-Verse-Replacer/releases) 下载最新版：
 
-- macOS：`BibleVerseReplacer-v0.1.12.zip`，支持 macOS 13 Ventura 及以上。
-- Windows：`BibleVerseReplacer-Windows-v0.1.12.zip`，支持 Windows 7 SP1 及以上，需要 .NET Framework 4.8。
+- macOS：`BibleVerseReplacer-v0.1.13.zip`，支持 macOS 13 Ventura 及以上。
+- Windows：`BibleVerseReplacer-Windows-v0.1.13.zip`，支持 Windows 7 SP1 及以上，需要 .NET Framework 4.8。
 
 目前还没有 Apple 公证或 Windows 代码签名。macOS 如果提示无法打开，请在 Finder 里右键 App，选择“打开”。
 
@@ -21,7 +21,7 @@ Bible Verse Replacer 是一个常驻后台的小工具。写文章、讲章、�
 
 ### macOS
 
-1. 解压 `BibleVerseReplacer-v0.1.12.zip`。
+1. 解压 `BibleVerseReplacer-v0.1.13.zip`。
 2. 把 `BibleVerseReplacer.app` 放到“应用程序”文件夹。
 3. 打开 App，菜单栏会出现一个“经”字图标。
 4. 按提示授予“辅助功能”权限。这个权限只用于模拟复制和粘贴。
@@ -29,7 +29,7 @@ Bible Verse Replacer 是一个常驻后台的小工具。写文章、讲章、�
 
 ### Windows
 
-1. 解压 `BibleVerseReplacer-Windows-v0.1.12.zip`。
+1. 解压 `BibleVerseReplacer-Windows-v0.1.13.zip`。
 2. 运行 `BibleVerseReplacer.exe`，系统托盘会出现应用图标。
 3. 在任意 App 里选中 `创世记 1:1`。
 4. 按默认快捷键 `Ctrl + Alt + Win + B`。
@@ -115,6 +115,8 @@ Genesis 4:1
 
 如果你正在使用 v0.1.7 到 v0.1.9，并且自动更新提示下载临时文件不存在，请手动下载最新版覆盖一次。v0.1.12 修复了中文正文紧贴经文引用时无法检测的问题，例如 `今天我读了创世记1:1`。
 
+v0.1.13 补全 11 个只存在于和合本 USFX 编号脚注中的经节；展开时会保留 `（有古卷加：……）` 标注。
+
 ## 离线与隐私
 
 经文替换不需要联网。经文库已经离线内置在 App 里。
@@ -135,14 +137,14 @@ Bible Verse Replacer is a small background utility for replacing selected Bible 
 
 Author: 大侠请留步
 
-Current version: v0.1.12
+Current version: v0.1.13
 
 ## Download
 
 Download the latest release from [Releases](https://github.com/maxiaovo/Bible-Verse-Replacer/releases):
 
-- macOS: `BibleVerseReplacer-v0.1.12.zip`, macOS 13 Ventura or later.
-- Windows: `BibleVerseReplacer-Windows-v0.1.12.zip`, Windows 7 SP1 or later with .NET Framework 4.8.
+- macOS: `BibleVerseReplacer-v0.1.13.zip`, macOS 13 Ventura or later.
+- Windows: `BibleVerseReplacer-Windows-v0.1.13.zip`, Windows 7 SP1 or later with .NET Framework 4.8.
 
 The app is not notarized or code-signed yet. On macOS, if the system blocks the app, right-click it in Finder and choose Open.
 
@@ -150,7 +152,7 @@ The app is not notarized or code-signed yet. On macOS, if the system blocks the 
 
 ### macOS
 
-1. Unzip `BibleVerseReplacer-v0.1.12.zip`.
+1. Unzip `BibleVerseReplacer-v0.1.13.zip`.
 2. Move `BibleVerseReplacer.app` to Applications.
 3. Open the app. A “经” icon appears in the menu bar.
 4. Grant Accessibility permission when prompted. This is used only to simulate copy and paste.
@@ -158,7 +160,7 @@ The app is not notarized or code-signed yet. On macOS, if the system blocks the 
 
 ### Windows
 
-1. Unzip `BibleVerseReplacer-Windows-v0.1.12.zip`.
+1. Unzip `BibleVerseReplacer-Windows-v0.1.13.zip`.
 2. Run `BibleVerseReplacer.exe`. The app icon appears in the system tray.
 3. Select `创世记 1:1` in any app.
 4. Press `Ctrl + Alt + Win + B`.
@@ -219,6 +221,8 @@ If macOS System Settings shows Accessibility enabled but the app still says perm
 Automatic update checks are on by default. When a new release is available, the app can download and install it with a progress bar, then restart itself.
 
 If you are using v0.1.7 through v0.1.9 and automatic update reports a missing temporary download file, please install the latest version manually once. v0.1.12 fixes detection when Chinese prose touches a Bible reference directly, such as `今天我读了创世记1:1`.
+
+v0.1.13 restores the 11 numbered verses found only in the CUV USFX footnotes and preserves the `（有古卷加：……）` annotation when expanding them.
 
 ## Offline and Privacy
 

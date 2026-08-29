@@ -169,7 +169,8 @@ jobs:
 
           本 release 由 GitHub Actions 自动创建，对应 main 分支 commit ${{ github.sha }}。
 
-          - 修复中文正文紧贴经文引用时无法检测的问题，例如：今天我读了创世记1:1。
+          - 补全 11 个只存在于和合本 USFX 编号脚注中的经节，可直接引用和展开。
+          - 展开这些经节时保留（有古卷加：……）标注。
           - 本次 release 同时包含 macOS 与 Windows 安装包。
 
           ## 下载
