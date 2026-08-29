@@ -18,6 +18,66 @@ enum SelfTest {
                 format: preferencesFormat
             )
 
+            let numberedFootnoteVerses = [
+                ("马太福音 18:11", "马太福音 18:11 （有古卷加：人子来，为要拯救失丧的人。）"),
+                ("马太福音 23:14", "马太福音 23:14 （有古卷加：你们这假冒为善的文士和法利赛人有祸了！因为你们侵吞寡妇的家产，假意做很长的祷告，所以要受更重的刑罚。）"),
+                ("马可福音 7:16", "马可福音 7:16 （有古卷加：有耳可听的，就应当听！）"),
+                ("马可福音 15:28", "马可福音 15:28 （有古卷加：这就应了经上的话说：他被列在罪犯之中。）"),
+                ("路加福音 17:36", "路加福音 17:36 （有古卷加：两个人在田里，要取去一个，撇下一个。）"),
+                ("路加福音 23:17", "路加福音 23:17 （有古卷加：每逢这节期，巡抚必须释放一个囚犯给他们。）"),
+                ("约翰福音 5:4", "约翰福音 5:4 （有古卷加：因为有天使按时下池子搅动那水，水动之后，谁先下去，无论害什么病就痊愈了。）"),
+                ("使徒行传 8:37", "使徒行传 8:37 （有古卷加：腓利说：“你若是一心相信，就可以。”他回答说：“我信耶稣基督是神的儿子。”）"),
+                ("使徒行传 15:34", "使徒行传 15:34 （有古卷加：惟有西拉定意仍住在那里。）"),
+                ("使徒行传 24:7", "使徒行传 24:7 （有古卷加：不料，千夫长吕西亚前来，甚是强横，从我们手中把他夺去，吩咐告他的人到你这里来。）"),
+                ("使徒行传 28:29", "使徒行传 28:29 （有古卷加：保罗说了这话，犹太人议论纷纷地就走了。）")
+            ]
+            for (raw, expected) in numberedFootnoteVerses {
+                try assertFormatted(
+                    raw: raw,
+                    expected: expected,
+                    parser: parser,
+                    formatter: formatter,
+                    format: .referenceVerseLines
+                )
+            }
+
+            try assertFormatted(
+                raw: "马太福音 23:14",
+                expected: "马太福音 23:14 （有古卷加：你们这假冒为善的文士和法利赛人有祸了！因为你们侵吞寡妇的家产，假意做很长的祷告，所以要受更重的刑罚。）",
+                parser: parser,
+                formatter: formatter,
+                format: .continuousText,
+                labelMode: .normalizedFull
+            )
+
+            try assertFormatted(
+                raw: "马太福音 23:14",
+                expected: "马太福音 23:14\n（有古卷加：你们这假冒为善的文士和法利赛人有祸了！因为你们侵吞寡妇的家产，假意做很长的祷告，所以要受更重的刑罚。）",
+                parser: parser,
+                formatter: formatter,
+                format: .referenceHeader,
+                labelMode: .normalizedFull
+            )
+
+            try assertFormatted(
+                raw: "马太福音 23:14",
+                expected: "马太福音 23:14\n14 （有古卷加：你们这假冒为善的文士和法利赛人有祸了！因为你们侵吞寡妇的家产，假意做很长的祷告，所以要受更重的刑罚。）",
+                parser: parser,
+                formatter: formatter,
+                format: .numberedVerses,
+                labelMode: .normalizedFull
+            )
+
+            try assertFormatted(
+                raw: "马太福音 23:13-15",
+                expected: "马太福音 23:13 「你们这假冒为善的文士和法利赛人有祸了！因为你们正当人前，把天国的门关了，自己不进去，正要进去的人，你们也不容他们进去。\n马太福音 23:14 （有古卷加：你们这假冒为善的文士和法利赛人有祸了！因为你们侵吞寡妇的家产，假意做很长的祷告，所以要受更重的刑罚。）\n马太福音 23:15 「你们这假冒为善的文士和法利赛人有祸了！因为你们走遍洋海陆地，勾引一个人入教，既入了教，却使他作地狱之子，比你们还加倍。",
+                parser: parser,
+                formatter: formatter,
+                format: .referenceVerseLines,
+                labelMode: .normalizedFull,
+                quotationStyle: .square
+            )
+
             try assertFormatted(
                 raw: "创 1:1",
                 expected: "创世记 1:1 起初，神创造天地。",
@@ -267,6 +327,20 @@ enum SelfTest {
                 "已经替换：创世记 1:1 起初，神创造天地。"
             ] where !articleResult.text.contains(fragment) {
                 throw TestFailure("Expected article output to contain \(fragment), got \(articleResult.text)")
+            }
+
+            let annotatedArticle = "已经替换：马太福音 23:14 （有古卷加：你们这假冒为善的文士和法利赛人有祸了！因为你们侵吞寡妇的家产，假意做很长的祷告，所以要受更重的刑罚。）"
+            let annotatedArticleResult = articleReplacer.replaceReferences(
+                in: annotatedArticle,
+                format: .continuousText,
+                labelMode: .normalizedFull,
+                combinedPassageMode: .compactEllipsis,
+                quotationStyle: .fullWidth
+            )
+            if annotatedArticleResult.replacements != 0 ||
+                annotatedArticleResult.skippedExisting != 1 ||
+                annotatedArticleResult.text != annotatedArticle {
+                throw TestFailure("Expected annotated footnote verse to remain unchanged, got \(annotatedArticleResult.text)")
             }
 
             let inlineChineseArticle = "今天我读了创世记1:1"

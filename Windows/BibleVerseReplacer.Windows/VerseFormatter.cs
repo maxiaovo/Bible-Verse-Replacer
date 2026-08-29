@@ -123,7 +123,7 @@ namespace BibleVerseReplacer.Windows
                     builder.Append(verse.ReferenceVerseText);
                     builder.Append(' ');
                 }
-                builder.Append(CleanText(verse.Text, quotationStyle));
+                builder.Append(DisplayText(verse, quotationStyle));
             }
             return builder.ToString();
         }
@@ -140,7 +140,7 @@ namespace BibleVerseReplacer.Windows
                 }
                 builder.Append(verse.VerseLabel);
                 builder.Append(' ');
-                builder.Append(CleanText(verse.Text, quotationStyle));
+                builder.Append(DisplayText(verse, quotationStyle));
             }
             return builder.ToString();
         }
@@ -150,7 +150,7 @@ namespace BibleVerseReplacer.Windows
             StringBuilder builder = new StringBuilder();
             foreach (BibleVerse verse in verses)
             {
-                builder.Append(CleanText(verse.Text, quotationStyle));
+                builder.Append(DisplayText(verse, quotationStyle));
             }
             return builder.ToString();
         }
@@ -195,6 +195,13 @@ namespace BibleVerseReplacer.Windows
         public static string CleanText(string text, QuotationStyle quotationStyle)
         {
             return ApplyQuotationStyle(text ?? string.Empty, quotationStyle).Replace("\u3000", string.Empty).Trim();
+        }
+
+        public static string DisplayText(BibleVerse verse, QuotationStyle quotationStyle)
+        {
+            string text = CleanText(verse.Text, quotationStyle);
+            string note = (verse.Note ?? string.Empty).Trim();
+            return note.Length == 0 ? text : "（" + note + "：" + text + "）";
         }
 
         private static string ApplyQuotationStyle(string text, QuotationStyle quotationStyle)

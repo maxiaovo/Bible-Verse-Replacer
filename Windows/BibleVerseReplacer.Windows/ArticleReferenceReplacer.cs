@@ -227,7 +227,7 @@ namespace BibleVerseReplacer.Windows
             }
 
             string remaining = article.Substring(cursor);
-            string expected = VerseFormatter.CleanText(verses[0].Text, quotationStyle);
+            string expected = VerseFormatter.DisplayText(verses[0], quotationStyle);
             return NormalizedScripturePrefix(remaining).StartsWith(
                 NormalizedScripturePrefix(expected.Length > 12 ? expected.Substring(0, 12) : expected),
                 StringComparison.Ordinal);

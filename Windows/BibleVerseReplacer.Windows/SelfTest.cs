@@ -14,6 +14,38 @@ namespace BibleVerseReplacer.Windows
                 ArticleReferenceReplacer articleReplacer = new ArticleReferenceReplacer(parser, formatter);
 
                 AssertFormatted(parser, formatter, "创世记 1:1", OutputFormat.ReferenceVerseLines, ReferenceLabelMode.NormalizedFull, "创世记 1:1 起初，神创造天地。", false);
+                string[,] numberedFootnoteVerses =
+                {
+                    { "马太福音 18:11", "马太福音 18:11 （有古卷加：人子来，为要拯救失丧的人。）" },
+                    { "马太福音 23:14", "马太福音 23:14 （有古卷加：你们这假冒为善的文士和法利赛人有祸了！因为你们侵吞寡妇的家产，假意做很长的祷告，所以要受更重的刑罚。）" },
+                    { "马可福音 7:16", "马可福音 7:16 （有古卷加：有耳可听的，就应当听！）" },
+                    { "马可福音 15:28", "马可福音 15:28 （有古卷加：这就应了经上的话说：他被列在罪犯之中。）" },
+                    { "路加福音 17:36", "路加福音 17:36 （有古卷加：两个人在田里，要取去一个，撇下一个。）" },
+                    { "路加福音 23:17", "路加福音 23:17 （有古卷加：每逢这节期，巡抚必须释放一个囚犯给他们。）" },
+                    { "约翰福音 5:4", "约翰福音 5:4 （有古卷加：因为有天使按时下池子搅动那水，水动之后，谁先下去，无论害什么病就痊愈了。）" },
+                    { "使徒行传 8:37", "使徒行传 8:37 （有古卷加：腓利说：“你若是一心相信，就可以。”他回答说：“我信耶稣基督是神的儿子。”）" },
+                    { "使徒行传 15:34", "使徒行传 15:34 （有古卷加：惟有西拉定意仍住在那里。）" },
+                    { "使徒行传 24:7", "使徒行传 24:7 （有古卷加：不料，千夫长吕西亚前来，甚是强横，从我们手中把他夺去，吩咐告他的人到你这里来。）" },
+                    { "使徒行传 28:29", "使徒行传 28:29 （有古卷加：保罗说了这话，犹太人议论纷纷地就走了。）" }
+                };
+                for (int index = 0; index < numberedFootnoteVerses.GetLength(0); index++)
+                {
+                    AssertFormatted(parser, formatter, numberedFootnoteVerses[index, 0], OutputFormat.ReferenceVerseLines, ReferenceLabelMode.NormalizedFull, numberedFootnoteVerses[index, 1], false);
+                }
+
+                AssertFormatted(parser, formatter, "马太福音 23:14", OutputFormat.ContinuousText, ReferenceLabelMode.NormalizedFull, "马太福音 23:14 （有古卷加：你们这假冒为善的文士和法利赛人有祸了！因为你们侵吞寡妇的家产，假意做很长的祷告，所以要受更重的刑罚。）", false);
+                AssertFormatted(parser, formatter, "马太福音 23:14", OutputFormat.ReferenceHeader, ReferenceLabelMode.NormalizedFull, "马太福音 23:14\r\n（有古卷加：你们这假冒为善的文士和法利赛人有祸了！因为你们侵吞寡妇的家产，假意做很长的祷告，所以要受更重的刑罚。）", false);
+                AssertFormatted(parser, formatter, "马太福音 23:14", OutputFormat.NumberedVerses, ReferenceLabelMode.NormalizedFull, "马太福音 23:14\r\n14 （有古卷加：你们这假冒为善的文士和法利赛人有祸了！因为你们侵吞寡妇的家产，假意做很长的祷告，所以要受更重的刑罚。）", false);
+                AssertFormatted(
+                    parser,
+                    formatter,
+                    "马太福音 23:13-15",
+                    OutputFormat.ReferenceVerseLines,
+                    ReferenceLabelMode.NormalizedFull,
+                    CombinedPassageMode.CompactEllipsis,
+                    QuotationStyle.Square,
+                    "马太福音 23:13 「你们这假冒为善的文士和法利赛人有祸了！因为你们正当人前，把天国的门关了，自己不进去，正要进去的人，你们也不容他们进去。\r\n马太福音 23:14 （有古卷加：你们这假冒为善的文士和法利赛人有祸了！因为你们侵吞寡妇的家产，假意做很长的祷告，所以要受更重的刑罚。）\r\n马太福音 23:15 「你们这假冒为善的文士和法利赛人有祸了！因为你们走遍洋海陆地，勾引一个人入教，既入了教，却使他作地狱之子，比你们还加倍。",
+                    false);
                 AssertFormatted(parser, formatter, "创 1:1", OutputFormat.ContinuousText, ReferenceLabelMode.NormalizedFull, "创世记 1:1 起初，神创造天地。", false);
                 AssertFormatted(parser, formatter, "创 1:1", OutputFormat.ContinuousText, ReferenceLabelMode.PreserveInput, "创 1:1 起初，神创造天地。", false);
                 AssertFormatted(parser, formatter, "创 1:1", OutputFormat.ContinuousText, ReferenceLabelMode.Omit, "起初，神创造天地。", false);
@@ -80,6 +112,18 @@ namespace BibleVerseReplacer.Windows
                 AssertTextContains(articleResult.Text, "今天读：创世记 1:1 起初，神创造天地。");
                 AssertTextContains(articleResult.Text, "还有 马可福音 5:8 是因耶稣曾吩咐他说");
                 AssertTextContains(articleResult.Text, "已经替换：创世记 1:1 起初，神创造天地。");
+
+                string annotatedArticle = "已经替换：马太福音 23:14 （有古卷加：你们这假冒为善的文士和法利赛人有祸了！因为你们侵吞寡妇的家产，假意做很长的祷告，所以要受更重的刑罚。）";
+                ArticleReplacementResult annotatedArticleResult = articleReplacer.ReplaceReferences(
+                    annotatedArticle,
+                    OutputFormat.ContinuousText,
+                    ReferenceLabelMode.NormalizedFull,
+                    CombinedPassageMode.CompactEllipsis,
+                    QuotationStyle.FullWidth);
+                if (annotatedArticleResult.Replacements != 0 || annotatedArticleResult.SkippedExisting != 1 || annotatedArticleResult.Text != annotatedArticle)
+                {
+                    throw new InvalidOperationException("Expected annotated footnote verse to remain unchanged, got " + annotatedArticleResult.Text);
+                }
 
                 string inlineChineseArticle = "今天我读了创世记1:1";
                 ArticleReplacementResult inlineChineseResult = articleReplacer.ReplaceReferences(

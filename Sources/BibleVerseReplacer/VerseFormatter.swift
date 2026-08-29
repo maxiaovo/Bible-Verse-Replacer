@@ -82,7 +82,7 @@ final class VerseFormatter {
         switch format {
         case .referenceVerseLines:
             return verses.map { verse in
-                "\(BibleBookCatalog.chineseName(for: verse.book)) \(verse.referenceVerseText) \(cleanText(verse.text, quotationStyle: quotationStyle))"
+                "\(BibleBookCatalog.chineseName(for: verse.book)) \(verse.referenceVerseText) \(displayText(for: verse, quotationStyle: quotationStyle))"
             }.joined(separator: "\n")
 
         case .continuousText:
@@ -97,12 +97,12 @@ final class VerseFormatter {
             )
 
         case .referenceHeader:
-            let body = verses.map { cleanText($0.text, quotationStyle: quotationStyle) }.joined(separator: "\n")
+            let body = verses.map { displayText(for: $0, quotationStyle: quotationStyle) }.joined(separator: "\n")
             return "\(parsedReference.displayText)\n\(body)"
 
         case .numberedVerses:
             let body = verses.map { verse in
-                "\(verse.verseLabel) \(cleanText(verse.text, quotationStyle: quotationStyle))"
+                "\(verse.verseLabel) \(displayText(for: verse, quotationStyle: quotationStyle))"
             }.joined(separator: "\n")
             return applyLabelIfNeeded(label: labelText(parsedReference: parsedReference, labelMode: labelMode, originalReference: originalReference), body: body, separator: "\n")
         }
@@ -136,7 +136,7 @@ final class VerseFormatter {
         quotationStyle: QuotationStyle
     ) -> String {
         guard let verseGroups, !verseGroups.isEmpty else {
-            let body = verses.map { cleanText($0.text, quotationStyle: quotationStyle) }.joined()
+            let body = verses.map { displayText(for: $0, quotationStyle: quotationStyle) }.joined()
             return applyLabelIfNeeded(
                 label: labelText(parsedReference: parsedReference, labelMode: labelMode, originalReference: originalReference),
                 body: body,
@@ -147,7 +147,7 @@ final class VerseFormatter {
         switch combinedPassageMode {
         case .compactEllipsis:
             let body = verseGroups
-                .map { group in group.verses.map { cleanText($0.text, quotationStyle: quotationStyle) }.joined() }
+                .map { group in group.verses.map { displayText(for: $0, quotationStyle: quotationStyle) }.joined() }
                 .joined(separator: "……")
             return applyLabelIfNeeded(
                 label: labelText(
@@ -162,7 +162,7 @@ final class VerseFormatter {
 
         case .groupedLines:
             return verseGroups.map { group in
-                let body = group.verses.map { cleanText($0.text, quotationStyle: quotationStyle) }.joined()
+                let body = group.verses.map { displayText(for: $0, quotationStyle: quotationStyle) }.joined()
                 return applyLabelIfNeeded(
                     label: groupLabelText(
                         group: group,
@@ -181,6 +181,14 @@ final class VerseFormatter {
         applyQuotationStyle(raw, quotationStyle: quotationStyle)
             .replacingOccurrences(of: "\u{3000}", with: "")
             .trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    func displayText(for verse: BibleVerse, quotationStyle: QuotationStyle = .fullWidth) -> String {
+        let text = cleanText(verse.text, quotationStyle: quotationStyle)
+        guard let note = verse.note?.trimmingCharacters(in: .whitespacesAndNewlines), !note.isEmpty else {
+            return text
+        }
+        return "（\(note)：\(text)）"
     }
 
     private func applyQuotationStyle(_ raw: String, quotationStyle: QuotationStyle) -> String {

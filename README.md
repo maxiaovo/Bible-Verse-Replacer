@@ -127,6 +127,7 @@ Genesis 4:1
 替换选中文字时，程序会临时使用剪贴板：复制选中文字、写入替换后的经文、粘贴回去，然后尽量恢复原剪贴板内容。
 
 当前内置经文来自 eBible 的 [Chinese Union Version (Simplified) / `cmn-cu89s`](https://ebible.org/Scriptures/details.php?id=cmn-cu89s)。
+其中 11 个只出现在 USFX 编号脚注里的经节会保留“有古卷加”标注，并以 `（有古卷加：……）` 的形式展开。
 
 ## English
 
@@ -226,3 +227,4 @@ Bible replacement works offline. The scripture database is bundled inside the ap
 The app contacts the internet only when checking for updates. Replacement uses the clipboard temporarily: it copies the selection, writes the replacement, pastes it back, and then tries to restore the previous clipboard content.
 
 The built-in Bible text comes from eBible: [Chinese Union Version (Simplified) / `cmn-cu89s`](https://ebible.org/Scriptures/details.php?id=cmn-cu89s).
+The 11 numbered verses found only in USFX footnotes retain their textual-variant note and expand as `（有古卷加：……）`.

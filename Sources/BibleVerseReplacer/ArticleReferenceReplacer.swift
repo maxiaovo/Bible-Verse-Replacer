@@ -184,7 +184,7 @@ final class ArticleReferenceReplacer {
         }
 
         let remaining = String(text[cursor...])
-        let expected = formatter.cleanText(firstVerse.text, quotationStyle: quotationStyle)
+        let expected = formatter.displayText(for: firstVerse, quotationStyle: quotationStyle)
         return normalizedScripturePrefix(remaining).hasPrefix(normalizedScripturePrefix(String(expected.prefix(12))))
     }
 

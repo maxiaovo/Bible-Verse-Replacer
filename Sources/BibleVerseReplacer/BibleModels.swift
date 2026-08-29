@@ -22,6 +22,7 @@ struct BibleVerse: Decodable {
     let endVerse: Int
     let text: String
     let order: Int
+    let note: String?
 
     var referenceVerseText: String {
         if verse == endVerse {

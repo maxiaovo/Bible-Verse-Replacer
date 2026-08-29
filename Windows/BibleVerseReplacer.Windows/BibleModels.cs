@@ -43,6 +43,9 @@ namespace BibleVerseReplacer.Windows
         [DataMember(Name = "order")]
         public int Order { get; set; }
 
+        [DataMember(Name = "note", EmitDefaultValue = false)]
+        public string Note { get; set; }
+
         public string ReferenceVerseText
         {
             get
